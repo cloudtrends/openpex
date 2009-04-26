@@ -1,0 +1,17 @@
+#summary Technical requirements needed to develop and run OpenPEX
+#labels Phase-Requirements
+
+= Introduction =
+
+This document lists the prerequisites needed for developing and running OpenPEX.
+
+
+= Details =
+
+The following items are required to successfully develop and run OpenPEX.
+  * NetBeans 6.5.1
+  * IceFaces 1.8
+  * XenServer 5
+  * Glassfish v2 application server
+  * Java 1.5 or higher
+  * MySQL
