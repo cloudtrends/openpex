@@ -80,6 +80,10 @@ Under Additional Properties set the User as root and the password to be the root
 
 Under Resources> JDBC> Connection Pools the 'msqlPool' should be listed. Click on the JNDI link and then 'Ping' this connection to verify it works.
 
+== Prepare the NFS mount points for Operating System install media and Virtual Machine Images ==
+
+sdfasfas
+
 = Preparing the XenServer Resource Pool =
 
 Install the XenCenter software on an available Windows machine that can easily connect over the network to the XenServer nodes you have installed. 
