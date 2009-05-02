@@ -3,7 +3,7 @@
 
 = Introduction =
 
-This document describes the prerequisites needed for developing and running OpenPEX. In terms of server resources, you require n number of nodes (where n > 1) to run as worker nodes in the OpenPEX system. These nodes must be 64bit capable and have the hardware VT extensions available to them. These nodes will have XenServer installed on them (described below) and will erase any previously installed operating systems on that machine. You also need a gateway node that runs the OpenPEX software. This node needs a Java environment and application server, and also a NFS mount to host the Virtual Machine Images.
+This document describes the prerequisites needed for developing and running OpenPEX. In terms of server resources, you require n number of nodes (where n > 1) to run as worker nodes in the OpenPEX system. These nodes must be 64bit capable and have the hardware VT extensions available to them. These nodes will have XenServer installed on them (described below) and will erase any previously installed operating systems on that machine. You also need a gateway node that runs the OpenPEX software. This node needs a Java environment and application server, and also a NFS mount to host the Virtual Machine Images. This node should be relatively capabl but does not have to be 64bit or have hardware VT extensions. We recommend Ubuntu 8.04 or 9.04 as the operating system on the gateway node.
 
 
 = Details =
@@ -25,4 +25,9 @@ We utilise IceFaces for the Web Portal inferface of OpenPEX. Download the latest
 = XenServer =
 Download the latest version of Citrix XenServer from <a href="http://www.citrix.com">citrix.com</a>. <a href="http://www.citrix.com/lang/English/lp/lp_1688615.asp">This link</a> should take you directly to the download page. Download the Installer and the Linux Guest Support iso's and create installation CD's from them. At the time of writing the latest version of the Installer was FREE_XenServer-5.0.0-Update3-install.iso and the the Linux Guest Support was FREE_XenServer-5.0.0-Update3-linux.iso. Install Consult the <a href="http://www.citrix.com/xenserver_documentation_free">documentation</a> for assistance on installing XenServer on your machines.
 
-[http://www.google.com google]
+= Gateway node =
+Here we will explain how to configure the gateway node to run OpenPEX. This instructions have been tested for a physical installation of Ubuntu 8.0.4 LTS, however they should work for Ubuntu 9.0.4.
+
+
+
+Install the XenCenter software on an available Windows machine that can easily connect over the network to the XenServer nodes you have installed. 
