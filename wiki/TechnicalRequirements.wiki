@@ -82,7 +82,26 @@ Under Resources> JDBC> Connection Pools the 'msqlPool' should be listed. Click o
 
 == Prepare the NFS mount points for Operating System install media and Virtual Machine Images ==
 
-sdfasfas
+{{{
+brobergj@tyrellcorp:~$ mkdir /vimages
+
+brobergj@tyrellcorp:~$ mkdir /isostore
+
+brobergj@tyrellcorp:~$ cat /etc/exports 
+# /etc/exports: the access control list for filesystems which may be exported
+#		to NFS clients.  See exports(5).
+#
+# Example for NFSv2 and NFSv3:
+# /srv/homes       hostname1(rw,async) hostname2(ro,async)
+#
+# Example for NFSv4:
+# /srv/nfs4        gss/krb5i(rw,async,fsid=0,crossmnt)
+# /srv/nfs4/homes  gss/krb5i(rw,async)
+#
+/vimages roy(async,rw,no_root_squash) pris(async,rw,no_root_squash) leon(async,rw,no_root_squash) deckard(async,rw,no_root_squash) zhora(async,rw,no_root_squash)
+
+/isostore roy(async,rw,no_root_squash) pris(async,rw,no_root_squash) leon(async,rw,no_root_squash) deckard(async,rw,no_root_squash) zhora(async,rw,no_root_squash)
+}}}
 
 = Preparing the XenServer Resource Pool =
 
