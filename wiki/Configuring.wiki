@@ -58,4 +58,4 @@ You then need to add this server in NetBeans. To do this perform the following s
 
 Under the projects tab, right-click on the OpenPEX project and select "Properties". Click on the "Run" option and select the server (i.e. "GlassFish V2 OpenPEX") you just defined previously. Now select "OK".
 
-Now, right click on the OpenPEX project in the NetBeans IDE and select "Run". If you have set up your environment correctly, the OpenPEX code should be deployed to the application server running on the gateway and your default web browser should open and display the OpenPEX web portal (e.g. http://<gateway-hostname>:8080/OpenPEX).
+Now, right click on the OpenPEX project in the NetBeans IDE and select "Run". If you have set up your environment correctly, the OpenPEX code should be deployed to the application server running on the gateway and your default web browser should open and display the OpenPEX web portal (e.g. http://gateway-hostname:8080/OpenPEX).
