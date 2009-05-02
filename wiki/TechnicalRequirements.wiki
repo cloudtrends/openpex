@@ -26,8 +26,44 @@ We utilise IceFaces for the Web Portal inferface of OpenPEX. Download the latest
 Download the latest version of Citrix XenServer from <a href="http://www.citrix.com">citrix.com</a>. <a href="http://www.citrix.com/lang/English/lp/lp_1688615.asp">This link</a> should take you directly to the download page. Download the Installer and the Linux Guest Support iso's and create installation CD's from them. At the time of writing the latest version of the Installer was FREE_XenServer-5.0.0-Update3-install.iso and the the Linux Guest Support was FREE_XenServer-5.0.0-Update3-linux.iso. Install Consult the <a href="http://www.citrix.com/xenserver_documentation_free">documentation</a> for assistance on installing XenServer on your machines.
 
 = Gateway node =
-Here we will explain how to configure the gateway node to run OpenPEX. This instructions have been tested for a physical installation of Ubuntu 8.0.4 LTS, however they should work for Ubuntu 9.0.4.
+Here we will explain how to configure the gateway node to run OpenPEX. These instructions have been tested for a physical installation of Ubuntu 8.0.4 LTS, however they should work for Ubuntu 9.0.4. 
 
+Install a copy of Ubuntu Server 8.0.4 (or 9.0.4) onto the node you wish to utilise as the gateway.
+
+{{{
+%apt-get update
+%apt-get upgrade
+%apt-get install mysql-server
+%apt-get install libmysql-java
+%apt-get install sun-java5-jdk
+%apt-get install glassfishv2
+%apt-get install apache2 phpmyadmin
+}}}
+
+{{{%cp /usr/share/java/mysql-connector-java-5.1.5.jar /usr/share/glassfishv2/lib}}}
+
+
+{{{%vi /usr/bin/asadmin}}}
+
+Change
+
+GF_DOMAIN_DIR=$HOME/glassfishv2
+
+To,
+
+GF_DOMAIN_DIR=/var/lib/glassfishv2/domains
+
+== Add PEX MySQL database and user ==
+
+Open /etc/mysql/my.cnf and comment out the `bind-address` line as follows:
+
+# bind-address          = 127.0.0.1
+
+{{{%mysql -u root -p}}}
+
+{{{mysql> CREATE DATABASE pex;}}}
+
+{{{mysql> GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, CREATE TEMPORARY TABLES, LOCK TABLES ON pex.* TO 'pexadmin'@'localhost' IDENTIFIED BY 'yourpass';}}}
 
 
 Install the XenCenter software on an available Windows machine that can easily connect over the network to the XenServer nodes you have installed. 
