@@ -16,5 +16,12 @@ The following items are required to successfully develop and run OpenPEX.
   * Java 1.5 or higher
   * MySQL
 
-= Configuring & Installing NetBeans =
-NetBeans is the preferred development and deployment platform that is utilised for OpenPEX. Download the latest release from www.netbeans.org 
+= NetBeans =
+NetBeans is the preferred development and deployment platform that is utilised for OpenPEX. Download the latest release from <a href="www.netbeans.org">www.netbeans.org</a>. At the time of writing, this is version 6.5.1. Choose the "All" bundle to ensure you have all the necessary components.
+
+= IceFaces =
+We utilise IceFaces for the Web Portal inferface of OpenPEX. Download the latest NetBeans bundle for IceFaces from the IceFaces <a href="http://www.icefaces.org/main/downloads/os-downloads.iface">website</a> and follow the enclosed instructions that describe how to install these modules inside NetBeans. At the time of writing, the latest IceFaces bundle was ICEfaces-1.8.0-NetBeans-6.5.1-modules-a.zip.
+
+= XenServer =
+Download the latest version of Citrix XenServer from <a href="http://www.citrix.com">citrix.com</a>.
+
