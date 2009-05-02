@@ -9,7 +9,7 @@ This document lists the prerequisites needed for developing and running OpenPEX.
 = Details =
 
 The following items are required to successfully develop and run OpenPEX.
-  * NetBeans 6.5.1
+  * <a href="http://www.netbeans.org">NetBeans 6.5.1</a> 
   * IceFaces 1.8
   * XenServer 5
   * Glassfish v2 application server
