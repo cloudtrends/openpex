@@ -3,7 +3,7 @@
 
 = Introduction =
 
-This document lists the prerequisites needed for developing and running OpenPEX.
+This document describes the prerequisites needed for developing and running OpenPEX. In terms of server resources, you require n number of nodes (where n > 1) to run as worker nodes in the OpenPEX system. These nodes must be 64bit capable and have the hardware VT extensions available to them. These nodes will have XenServer installed on them (described below) and will erase any previously installed operating systems on that machine. You also need a gateway node that runs the OpenPEX software. This node needs a Java environment and application server, and also a NFS mount to host the Virtual Machine Images.
 
 
 = Details =
@@ -23,5 +23,4 @@ NetBeans is the preferred development and deployment platform that is utilised f
 We utilise IceFaces for the Web Portal inferface of OpenPEX. Download the latest NetBeans bundle for IceFaces from the IceFaces <a href="http://www.icefaces.org/main/downloads/os-downloads.iface">website</a> and follow the enclosed instructions that describe how to install these modules inside NetBeans. At the time of writing, the latest IceFaces bundle was ICEfaces-1.8.0-NetBeans-6.5.1-modules-a.zip.
 
 = XenServer =
-Download the latest version of Citrix XenServer from <a href="http://www.citrix.com">citrix.com</a>.
-
+Download the latest version of Citrix XenServer from <a href="http://www.citrix.com">citrix.com</a>. <a href="http://www.citrix.com/lang/English/lp/lp_1688615.asp">This link</a> should take you directly to the download page. Download the Installer and the Linux Guest Support iso's and create installation CD's from them. At the time of writing the latest version of the Installer was FREE_XenServer-5.0.0-Update3-install.iso and the the Linux Guest Support was FREE_XenServer-5.0.0-Update3-linux.iso. Install Consult the <a href="http://www.citrix.com/xenserver_documentation_free">documentation</a> for assistance on installing XenServer on your machines.
