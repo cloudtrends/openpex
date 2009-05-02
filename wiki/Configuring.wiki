@@ -26,6 +26,15 @@ db.password=XXXXXX
 db.url=jdbc:mysql://XXXX.XXXX.XXXX.XXXX:3306/pex
 }}}
 
+For `pex.nodes` edit the file so it matches your deployment of XenServer worker nodes. An example is given below, please edit it so it matches your own setup:
+{{{
+leon 128.250.XX.XXX
+roy 128.250.XX.XXX
+zhora 128.250.XX.XXX
+pris 128.250.XX.XXX
+deckard 128.250.XX.XXX
+}}}
+
 `Test.java` and `TestAPI.java` are simple test cases. If you wish to use them you need to ensure the root and password match that of your XenServer pool master:
 {{{
 String username = "root";
