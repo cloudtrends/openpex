@@ -40,3 +40,9 @@ deckard 128.250.XX.XXX
 String username = "root";
 String password = "XXXXXX";
 }}}
+
+Ensure that the glassfishv2 application server is running on your gateway node. To start the glassfishv2 server, you can type in the following command:
+
+{{{
+sudo asadmin stop-domain domain1
+}}}
