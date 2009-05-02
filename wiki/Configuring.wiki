@@ -11,18 +11,19 @@ This page will tell you how to configure OpenPEX to connect to and control a Xen
 First, checkout the code from the SVN using Netbeans. The recommended Netbeans version is 6.5.1 (with IceFaces 1.8 or greater installed). There are four files you need to edit to allow OpenPEX to connect to the XenServer cluster and the MySQL database. These files are:
 
   * `pex.properties`
+  * `pex.nodes`
   * `Test.java`
   * `TestAPI.java`
 
-For `pex.properties` edit the file so it matches your XenServer and MySQL installation:
+For `pex.properties` edit the file so it matches your XenServer and MySQL installation. For xen, you are telling OpenPEX which server is the Pool Master, by giving the root password and the address of that server. You also need to specify the MySQL username and password that was defined in TechnicalRequirements as well as the url of the database running on the gateway:
 {{{
 xen.username = root
 xen.password = XXXXXXX
-xen.url = http://XXXX.csse.unimelb.edu.au
+xen.url = http://XXXX.XXXX.XXXX.XXXX
 
 db.username=XXXXXX
 db.password=XXXXXX
-db.url=jdbc:mysql://XXXXX.csse.unimelb.edu.au:3306/pex
+db.url=jdbc:mysql://XXXX.XXXX.XXXX.XXXX:3306/pex
 }}}
 
 `Test.java` and `TestAPI.java` are simple test cases. If you wish to use them you need to ensure the root and password match that of your XenServer pool master:
