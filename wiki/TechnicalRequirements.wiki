@@ -82,7 +82,26 @@ Under Resources> JDBC> Connection Pools the 'msqlPool' should be listed. Click o
 
 == Prepare the NFS mount points for Operating System install media and Virtual Machine Images ==
 
+We need to set up the NFS mount points that will host the install media (for installing operating systems into virtual machines) and for the virtual machines themselves. Extensive documentation on setting up NFS mount points on Ubuntu is available [https://help.ubuntu.com/community/SettingUpNFSHowTo here], but the brief steps are as follows. In the example below, tyrellcorp is my gateway node and roy, pris, leon, deckard and zhora are my XenServer worker nodes. I am setting up `/vimages/` to store the Virtual Machine images, and `\isostore` for the iso images of installation media:
+
 {{{
+brobergj@tyrellcorp:~$ sudo vi /etc/hosts.allow 
+# /etc/hosts.allow: list of hosts that are allowed to access the system.
+#                   See the manual pages hosts_access(5) and hosts_options(5).
+#
+# Example:    ALL: LOCAL @some_netgroup
+#             ALL: .foobar.edu EXCEPT terminalserver.foobar.edu
+#
+# If you're going to protect the portmapper use the name "portmap" for the
+# daemon name. Remember that you can only use the keyword "ALL" and IP
+# addresses (NOT host or domain names) for the portmapper, as well as for
+# rpc.mountd (the NFS mount daemon). See portmap(8) and rpc.mountd(8)
+# for further information.
+#
+portmap mountd nfsd statd lockd rquotad : 128.250.xx.xxx/255.255.255.xxx
+
+sudo apt-get install portmap nfs-kernel-server
+
 brobergj@tyrellcorp:~$ mkdir /vimages
 
 brobergj@tyrellcorp:~$ mkdir /isostore
@@ -101,7 +120,15 @@ brobergj@tyrellcorp:~$ cat /etc/exports
 /vimages roy(async,rw,no_root_squash) pris(async,rw,no_root_squash) leon(async,rw,no_root_squash) deckard(async,rw,no_root_squash) zhora(async,rw,no_root_squash)
 
 /isostore roy(async,rw,no_root_squash) pris(async,rw,no_root_squash) leon(async,rw,no_root_squash) deckard(async,rw,no_root_squash) zhora(async,rw,no_root_squash)
+
+sudo exportfs -ra
+
+sudo /etc/init.d/portmap restart
+
+sudo /etc/init.d/nfs-kernel-server restart
 }}}
+
+
 
 = Preparing the XenServer Resource Pool =
 
