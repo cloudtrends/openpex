@@ -82,7 +82,7 @@ Under Resources> JDBC> Connection Pools the 'msqlPool' should be listed. Click o
 
 == Prepare the NFS mount points for Operating System install media and Virtual Machine Images ==
 
-We need to set up the NFS mount points that will host the install media (for installing operating systems into virtual machines) and for the virtual machines themselves. Extensive documentation on setting up NFS mount points on Ubuntu is available [https://help.ubuntu.com/community/SettingUpNFSHowTo here], but the brief steps are as follows. In the example below, tyrellcorp is my gateway node and roy, pris, leon, deckard and zhora are my XenServer worker nodes. I am setting up `/vimages/` to store the Virtual Machine images, and `\isostore` for the iso images of installation media:
+We need to set up the NFS mount points that will host the install media (for installing operating systems into virtual machines) and for the virtual machines themselves. Extensive documentation on setting up NFS mount points on Ubuntu is available [https://help.ubuntu.com/community/SettingUpNFSHowTo here], but the brief steps are as follows. In the example below, tyrellcorp is my gateway node and roy, pris, leon, deckard and zhora are my XenServer worker nodes. I am setting up `/vimages/` to store the Virtual Machine images, and `\isostore` for the iso images of installation media. `128.250.xx.xxx/255.255.255.xxx` is the IP address range and subnet of my cluster:
 
 {{{
 brobergj@tyrellcorp:~$ sudo vi /etc/hosts.allow 
@@ -100,11 +100,11 @@ brobergj@tyrellcorp:~$ sudo vi /etc/hosts.allow
 #
 portmap mountd nfsd statd lockd rquotad : 128.250.xx.xxx/255.255.255.xxx
 
-sudo apt-get install portmap nfs-kernel-server
+brobergj@tyrellcorp:~$ sudo apt-get install portmap nfs-kernel-server
 
-brobergj@tyrellcorp:~$ mkdir /vimages
+brobergj@tyrellcorp:~$ sudo mkdir /vimages
 
-brobergj@tyrellcorp:~$ mkdir /isostore
+brobergj@tyrellcorp:~$ sudo mkdir /isostore
 
 brobergj@tyrellcorp:~$ cat /etc/exports 
 # /etc/exports: the access control list for filesystems which may be exported
@@ -121,15 +121,14 @@ brobergj@tyrellcorp:~$ cat /etc/exports
 
 /isostore roy(async,rw,no_root_squash) pris(async,rw,no_root_squash) leon(async,rw,no_root_squash) deckard(async,rw,no_root_squash) zhora(async,rw,no_root_squash)
 
-sudo exportfs -ra
+brobergj@tyrellcorp:~$ sudo exportfs -ra
 
-sudo /etc/init.d/portmap restart
+brobergj@tyrellcorp:~$ sudo /etc/init.d/portmap restart
 
-sudo /etc/init.d/nfs-kernel-server restart
+brobergj@tyrellcorp:~$ sudo /etc/init.d/nfs-kernel-server restart
 }}}
-
 
 
 = Preparing the XenServer Resource Pool =
 
-Install the XenCenter software on an available Windows machine that can easily connect over the network to the XenServer nodes you have installed. 
+Install the XenCenter software on an available Windows machine that can easily connect over the network to the XenServer nodes you have installed. The XenCenter software is available on the XenServer installation media or can be downloaded separately [http://www.citrix.com/lang/English/lp/lp_1688615.asp here].
