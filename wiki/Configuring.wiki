@@ -44,7 +44,7 @@ String password = "XXXXXX";
 Ensure that the glassfishv2 application server is running on your gateway node. To start the glassfishv2 server, you can type in the following command:
 
 {{{
-brobergj@tyrellcorp:~$ sudo asadmin stop-domain domain1
+brobergj@tyrellcorp:~$ sudo asadmin start-domain domain1
 }}}
 
 You then need to add this server in NetBeans. To do this perform the following steps: 
@@ -56,3 +56,6 @@ You then need to add this server in NetBeans. To do this perform the following s
  # Enter the fully qualified hostname for the gateway node running the application server (e.g. "tyrellcorp.csse.unimelb.edu.au") and hit "Next".
  # Enter the admin username and password that was defined in TechnicalRequirements and hit "Finish".
 
+Under the projects tab, right-click on the OpenPEX project and select "Properties". Click on the "Run" option and select the server (i.e. "GlassFish V2 OpenPEX") you just defined previously. Now select "OK".
+
+Now, right click on the OpenPEX project in the NetBeans IDE and select "Run". If you have set up your environment correctly, the OpenPEX code should be deployed to the application server running on the gateway and your default web browser should open and display the OpenPEX web portal (e.g. http://<gateway-hostname>:8080/OpenPEX).
