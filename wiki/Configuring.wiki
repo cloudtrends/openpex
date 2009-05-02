@@ -44,5 +44,15 @@ String password = "XXXXXX";
 Ensure that the glassfishv2 application server is running on your gateway node. To start the glassfishv2 server, you can type in the following command:
 
 {{{
-sudo asadmin stop-domain domain1
+brobergj@tyrellcorp:~$ sudo asadmin stop-domain domain1
 }}}
+
+You then need to add this server in NetBeans. To do this perform the following steps: 
+ # Inside the NetBeans IDE, click on the "Services" tab at the top-left of the NetBeans IDE window. 
+ # Right click on "Servers" and select "Add Server...". 
+ # Choose the server type as "Glassfish V2" 
+ # Give it a name (e.g. "GlassFish V2 OpenPEX") and hit "Next"
+ # Select "Register Remote Domain" and hit "Next"
+ # Enter the fully qualified hostname for the gateway node running the application server (e.g. "tyrellcorp.csse.unimelb.edu.au") and hit "Next".
+ # Enter the admin username and password that was defined in TechnicalRequirements and hit "Finish".
+
