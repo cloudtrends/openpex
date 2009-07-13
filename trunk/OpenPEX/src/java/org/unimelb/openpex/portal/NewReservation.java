@@ -38,6 +38,7 @@ import javax.faces.event.ActionEvent;
 import javax.faces.event.ValueChangeEvent;
 import org.unimelb.openpex.PexException;
 import org.unimelb.openpex.ResourceManager;
+import org.unimelb.openpex.reservation.InstanceType;
 import org.unimelb.openpex.reservation.PexReservationFailedException;
 import org.unimelb.openpex.reservation.ReservationManager;
 import org.unimelb.openpex.reservation.ReservationProposal;
@@ -453,8 +454,8 @@ public class NewReservation extends AbstractPageBean {
             String resID = rm.initiateReservation(sessBean.getUser().getUserid());
             ReservationProposal proposal1 = new ReservationProposal(resID);
             proposal1.setTemplate(this.getSelectedTemplate());
-            proposal1.setCPUs(cpuReq_);
-            proposal1.setNumInstances(1);
+            proposal1.setType(InstanceType.SMALL);
+            proposal1.setNumInstancesFixed(1);
             proposal1.setStartTime(beginTime);
             proposal1.setDuration(duration);
             proposal1.setUserid(sessBean.getUser().getUserid());

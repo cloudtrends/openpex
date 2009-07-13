@@ -36,10 +36,9 @@ import org.unimelb.openpex.VMInstance;
 @Entity
 @Table(name = "VM_RES")
 @NamedQueries({@NamedQuery(name = "ReservationEntity.findByRequestId", query = "SELECT r FROM ReservationEntity r WHERE r.requestId = :requestId"),
-        @NamedQuery(name = "ReservationEntity.findByNumInstances", query = "SELECT r FROM ReservationEntity r WHERE r.numInstances = :numInstances"), 
+        @NamedQuery(name = "ReservationEntity.findByNumInstances", query = "SELECT r FROM ReservationEntity r WHERE r.numInstancesFixed = :numInstancesFixed"),
         @NamedQuery(name = "ReservationEntity.findByStartTime", query = "SELECT r FROM ReservationEntity r WHERE r.startTime = :startTime"), 
         @NamedQuery(name = "ReservationEntity.findByEndTime", query = "SELECT r FROM ReservationEntity r WHERE r.endTime = :endTime"), 
-        @NamedQuery(name = "ReservationEntity.findByCpus", query = "SELECT r FROM ReservationEntity r WHERE r.cpus = :cpus"), 
         @NamedQuery(name = "ReservationEntity.findByTemplate", query = "SELECT r FROM ReservationEntity r WHERE r.template = :template"), 
         @NamedQuery(name = "ReservationEntity.findByStatus", query = "SELECT r FROM ReservationEntity r WHERE r.status = :status")})
         
