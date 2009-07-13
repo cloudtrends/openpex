@@ -1,21 +1,5 @@
-//    “Copyright 2008, 2009 Srikumar Venugopal & James Broberg”
-//
-//    This file is part of OpenPEX.
-//
-//    OpenPEX is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 2 of the License, or
-//    (at your option) any later version.
-//
-//    OpenPEX is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with OpenPEX.  If not, see <http://www.gnu.org/licenses/>.
-
 /*
+ * Copyright Srikumar Venugopal and James Broberg 2009
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
@@ -31,12 +15,15 @@ import java.util.Date;
 public class ReservationProposal {
 
     private String id = "";
-    private int numInstances = 0;
+    private int numInstancesFixed = 0;
+    private int numInstancesOption = 0;
     private Calendar startTime = null;
     private long duration = 0;
+    private InstanceType type;
     private int CPUs = 0;
     private int userid = 0;
     private String template = "";
+
 
     public ReservationProposal() {
     }
@@ -47,7 +34,7 @@ public class ReservationProposal {
 
     protected ReservationProposal(ReservationProposal request) {
         this.id = request.getId();
-        this.numInstances = request.getNumInstances();
+        this.numInstancesFixed = request.getNumInstances();
         this.startTime = request.getStartTime();
         this.duration = request.getDuration();
         this.CPUs = request.getCPUs();
@@ -72,11 +59,11 @@ public class ReservationProposal {
     }
 
     public int getNumInstances() {
-        return numInstances;
+        return numInstancesFixed;
     }
 
     public void setNumInstances(int nodes) {
-        this.numInstances = nodes;
+        this.numInstancesFixed = nodes;
     }
 
     public int getCPUs() {
@@ -111,14 +98,39 @@ public class ReservationProposal {
         this.userid = userid;
     }
 
+    public int getNumInstancesFixed() {
+        return numInstancesFixed;
+    }
+
+    public void setNumInstancesFixed(int numInstancesFixed) {
+        this.numInstancesFixed = numInstancesFixed;
+    }
+
+    public int getNumInstancesOption() {
+        return numInstancesOption;
+    }
+
+    public void setNumInstancesOption(int numInstancesOptional) {
+        this.numInstancesOption = numInstancesOption;
+    }
+
+    public InstanceType getType() {
+        return type;
+    }
+
+    public void setType(InstanceType type) {
+        this.type = type;
+    }
+
     public Object clone() {
         return new ReservationProposal(this);
     }
 
     public ReservationEntity convertToEntity() {
         ReservationEntity re = new ReservationEntity(this.getId());
-        re.setCpus((short) this.getCPUs());
-        re.setNumInstances((short) this.getNumInstances());
+        re.setType(this.type);
+        re.setNumInstancesFixed((short)numInstancesFixed);
+        re.setNumInstancesOption((short)numInstancesOption);
         re.setTemplate(this.getTemplate());
         re.setStartTime(this.getStartTime().getTime());
         Date endTime = new Date();
