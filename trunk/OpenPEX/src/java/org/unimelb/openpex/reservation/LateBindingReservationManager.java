@@ -1,20 +1,3 @@
-//    “Copyright 2008, 2009 Srikumar Venugopal & James Broberg”
-//
-//    This file is part of OpenPEX.
-//
-//    OpenPEX is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 2 of the License, or
-//    (at your option) any later version.
-//
-//    OpenPEX is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with OpenPEX.  If not, see <http://www.gnu.org/licenses/>.
-
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -28,6 +11,7 @@ import java.util.logging.Logger;
 import org.unimelb.openpex.Constants.ReservationStatus;
 import org.unimelb.openpex.PexException;
 import org.unimelb.openpex.command.PexCommand;
+import org.unimelb.openpex.storage.PexStorageFailedException;
 
 /**
  *
@@ -35,6 +19,11 @@ import org.unimelb.openpex.command.PexCommand;
  */
 public class LateBindingReservationManager extends SimpleReservationManager {
 
+    public static final int TOTAL_CPUS = 20;
+    public static final int SEGMENT_CPU = 1;
+    public static final int SEGMENT_MEMORY = 256;
+    public static final int SEGMENT_DISK = 5;
+    public static final float CLAIM_RISK = (float) 0.80;
     static Logger logger = Logger.getLogger(LateBindingReservationManager.class.getName());
     
     public LateBindingReservationManager() throws PexException{
@@ -58,88 +47,101 @@ public class LateBindingReservationManager extends SimpleReservationManager {
             logger.severe(" Oh noes! Reesirwayshun " + reservationID + " in bad state " + record.getStatus() + " no cheezburger for yooz");
             throw new PexReservationFailedException("Reservation in incorrect state");
         }
+        
+        /* Step1. Get all reservations that are bound or not, but starting at the requested start time*/
+        /* Step2a. If the total resource consumption of the bound researvations + requested is higher 
+         * than available, then generate counter offer */
+        /* Step 2b. Else if the total resource consumption of bound + unbound * risk factor + requested 
+         * is higher than available then generate counter offer */
+        /* Step 2c. Else generate a price for the existing offer and compare it against the offered price
+         * 
+         * 
+         */
+         
+         record = request.convertToEntity();
+         Date startTime = record.getStartTime();
+         Date endTime = record.getEndTime();
+         
+         List<ReservationEntity> boundList = 
+                 store.getReservationsCrossingInterval(startTime, endTime, ReservationStatus.CONFIRMED);
+
+         boundList.addAll(store.getReservationsCrossingInterval(startTime, endTime, ReservationStatus.ACTIVATED));
+
+         ReservationReply reply;
+         int boundLoad = 0, unboundLoad =0;
+
+         for(ReservationEntity res:boundList){
+             boundLoad =+ res.getNumInstancesFixed()*res.getType().getNumCPU();
+             unboundLoad =+ res.getNumInstancesOption()*res.getType().getNumCPU();
+         }
+
+         if (boundLoad + unboundLoad > TOTAL_CPUS){
+            //Reject the offer
+             reply = new ReservationReply();
+             reply.setProposal(request);
+             reply.setReply(ReservationReply.ReservationReplyType.REJECT);
+         }
+
+         
+         int futureBoundLoad = boundLoad + record.getNumInstancesFixed()*record.getType().getNumCPU();
+         float futurePossibleLoad = futureBoundLoad +
+                 (unboundLoad + record.getNumInstancesOption()*record.getType().getNumCPU())*CLAIM_RISK;
+         
+         if (futureBoundLoad > TOTAL_CPUS){
+             /*Convert to mixed fixed + option offer */
+
+             int diff = futureBoundLoad - TOTAL_CPUS;
+
+             //getCounterOffer();
+             //reply = new ReservationReply();
+             //reply.setProposal((ReservationProposal) record.convertToProposal());
+             //reply.setReply(ReservationReplyType.COUNTER);
+             //return;
+         }
+
+         if(futurePossibleLoad > TOTAL_CPUS)
+         {
+             /**/
+             //getCounterOffer();
+             //reply = new ReservationReply();
+             //reply.setProposal((ReservationProposal) record.convertToProposal());
+             //reply.setReply(ReservationReplyType.COUNTER);
+             //return;
+         } else {
+             float price = computePrice(record);
+             record.setStatus(ReservationStatus.ACCEPTED);
+             try {
+                 store.saveReservation(record);
+             } catch (PexStorageFailedException ex) {
+                 logger.severe("Error in saving record to store");
+                 throw new  PexReservationFailedException("Store failure", ex);  
+             }
+             logger.info("Sending reply ACCEPT for reservation " + record.getRequestId());
+             reply = new ReservationReply();
+             reply.setProposal((ReservationProposal) record.convertToProposal());
+             reply.setReply(ReservationReply.ReservationReplyType.ACCEPT);
+         }
+         return null;
+    }
+
+    private float computePrice(ReservationEntity record) {
+        /* 1 unit = 1 cpu, 768 MB RAM, 10 G HDD
+         */
+        
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    private ReservationProposal getCounterOffer(ReservationProposal origProposal){
+        ReservationProposal newProposal = null;
+        
+        /*Step1. Determine the availability profile for the next time horizon
+         *Step2. Find a gap where a new slot can be given.
+         *Step3. Return the slot, pricing and other info as a counter proposal
+         */
+
 
         
-//        List<ClusterNode> nodes = nodeMonitor.getAvailableNodes();
-//        if (nodes.isEmpty()) {
-//            logger.severe("Oh noes ! I dont has nodez");
-//            throw new PexReservationFailedException("No available nodes");
-//        }
-//
-//        ReservationRecord newRec = new ReservationRecord(request, ReservationStatus.SUBMITTED);
-////        ReservationEntity newRecord = newRec.convertToEntity();
-//        record = newRec.convertToEntity();
-//        record.setRequestId(reservationID);
-//        ReservationReply reply = null;
-//
-//        List<ClusterNode> feasibleList = new ArrayList<ClusterNode>();
-//        for (ClusterNode node : nodes) {
-//            if (node.isFeasible(record)) {
-//                feasibleList.add(node);
-//                logger.info("Reservation " + record.getRequestId() + " is feasible for node " + node.getName());
-//            }
-//        }
-//        if (feasibleList.size() > 0) {
-//            Random rand = new Random();
-//            ClusterNode node = feasibleList.get(rand.nextInt(feasibleList.size()));
-//            logger.info("Chose node " + node.getName() + "for reservation " + record.getRequestId());
-//            logger.info("Reservation " + record.getRequestId() + " is changed to status ACCEPTED");
-//            record.setStatus(ReservationStatus.ACCEPTED);
-//            Set<ClusterNode> serviceNodes = new HashSet<ClusterNode>();
-//            serviceNodes.add(node);
-//            record.setNodes(serviceNodes);
-//            logger.info("Storing new status ACCEPTED for reservation " + record.getRequestId());
-//            reserveMap.remove(record.getRequestId());
-//            reserveMap.put(record.getRequestId(), record);
-//            record.setStatus(ReservationStatus.ACCEPTED);
-//            try {
-//                store.saveReservation(record);
-//            } catch (PexStorageFailedException ex) {
-//                logger.severe("Error in saving record to store");
-//                throw new PexReservationFailedException("Store failure", ex);
-//            }
-//            logger.info("Sending reply ACCEPT for reservation " + record.getRequestId());
-//            reply = new ReservationReply();
-//            reply.setProposal((ReservationProposal) record.convertToProposal());
-//            reply.setReply(ReservationReplyType.ACCEPT);
-////    		ReservationRecord tempRecord = reserveMap.get(record.getId());
-////    		logger.info("Msg from tmpRecord status is "+tempRecord.getStatus());
-//        } else {
-//            Calendar[] alt = null, chosen = null;
-//            long diff = 0, minDiff = Long.MAX_VALUE;
-//            ClusterNode selected = null;
-//            for (ClusterNode candidate : nodes) {
-//                alt = candidate.getAlternateSlot(record);
-//                diff = alt[0].getTimeInMillis() - record.getStartTime().getTime();
-//                if (diff < 0) {
-//                    logger.info("Strange new slot " + alt[0].getTime() + " " + alt[1].getTime() + " from " + candidate.getName());
-//                }
-//                if (diff < minDiff) {
-//                    selected = candidate;
-//                    chosen = alt;
-//                    minDiff = diff;
-//                }
-//            }
-//            Set<ClusterNode> serviceNodes = new HashSet<ClusterNode>();
-//            serviceNodes.add(selected);
-//            record.setNodes(serviceNodes);
-//            record.setStatus(ReservationStatus.COUNTERED);
-//            record.setStartTime(chosen[0].getTime());
-//            record.setEndTime(chosen[1].getTime());
-//            reserveMap.remove(record.getRequestId());
-//            reserveMap.put(record.getRequestId(), record);
-//            try {
-//                store.saveReservation(record);
-//            } catch (PexStorageFailedException ex) {
-//                logger.severe("Error in saving record to store");
-//                throw new PexReservationFailedException("Store failure", ex);
-//            }
-//            reply = new ReservationReply();
-//            reply.setProposal((ReservationProposal) record.convertToProposal());
-//            reply.setReply(ReservationReplyType.COUNTER);
-//        }
-
-        return null;
+        return newProposal;
     }
 //
 //    public synchronized ReservationReply replyToCounter(String reservationID, ReservationReply reply)

@@ -32,6 +32,7 @@ import javax.persistence.Persistence;
 import javax.persistence.Query;
 import javax.persistence.TemporalType;
 import org.unimelb.openpex.ClusterNode;
+import org.unimelb.openpex.Constants.ReservationStatus;
 import org.unimelb.openpex.VMInstance;
 import org.unimelb.openpex.VmUser;
 
@@ -82,14 +83,15 @@ public class PexStorage {
                 logger.info("updating reservation " + res.getRequestId());
 //                re = res;
                 /*
-                 * srikumar - This is a disgusting hack just because I havent udenrstood JPA yet. 
+                 * srikumar - This is a disgusting hack just because I havent udenrstood JPA yet.
                  */
                 re.setStartTime(res.getStartTime());
                 re.setEndTime(res.getEndTime());
-                re.setNumInstances(res.getNumInstances());
+                re.setNumInstancesFixed(res.getNumInstancesFixed());
+                re.setNumInstancesOption(res.getNumInstancesOption());
                 re.setStatus(res.getStatus());
                 re.setTemplate(res.getTemplate());
-                re.setCpus(res.getCpus());
+                re.setType(res.getType());
                 re.setNodes(res.getNodes());
                 em.persist(re);
             }
@@ -125,11 +127,12 @@ public class PexStorage {
         return resList;
     }
 
-    public List<ReservationEntity> getReservationsCrossingInterval(Date startTime, Date endTime){
+    public List<ReservationEntity> getReservationsCrossingInterval(Date startTime, Date endTime, ReservationStatus status){
         Query resQuery = em.createQuery("select r from ReservationEntity r where" +
-                " (r.endTime >= :sTime) AND (r.startTime <= :eTime )");
+                " (r.endTime >= :sTime) AND (r.startTime <= :eTime) AND (r.status = :status)");
         resQuery.setParameter("sTime", startTime, TemporalType.TIMESTAMP);
         resQuery.setParameter("eTime", endTime, TemporalType.TIMESTAMP);
+        resQuery.setParameter("status", status);
         List<ReservationEntity> resList = resQuery.getResultList();
         return resList;
     }
@@ -212,7 +215,7 @@ public class PexStorage {
                 logger.info("updating vm " + vm.getVmID());
 //                re = res;
                 /*
-                 * srikumar - This is a disgusting hack just because I havent udenrstood JPA yet. 
+                 * srikumar - This is a disgusting hack just because I havent udenrstood JPA yet.
                  */
                 vm.setName(vmInst.getName());
                 vm.setClusterNode(vmInst.getClusterNode());

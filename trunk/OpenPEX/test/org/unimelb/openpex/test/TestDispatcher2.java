@@ -32,6 +32,7 @@ import com.xensource.xenapi.VM;
 import java.util.Calendar;
 import org.unimelb.openpex.ResourceManager;
 import org.unimelb.openpex.VMListener.VMStatus;
+import org.unimelb.openpex.reservation.InstanceType;
 import org.unimelb.openpex.reservation.ReservationEntity;
 import org.unimelb.openpex.storage.PexStorage;
 import org.unimelb.openpex.xen.XenClusterNode;
@@ -95,7 +96,7 @@ public class TestDispatcher2 {
                     xvm = new XenVMInstance();
                     xvm.setRecord(record);
                     ReservationEntity one = new ReservationEntity("lolz");
-                    one.setCpus((short)1);
+                    one.setType(InstanceType.SMALL);
                     one.setStartTime(Calendar.getInstance().getTime());
                     one.setEndTime(Calendar.getInstance().getTime());
                     one.setUserid((short)1);
@@ -113,7 +114,8 @@ public class TestDispatcher2 {
                     Thread.sleep(10000);
                     
                     try {
-                        xvm.startInstance(node);
+                        xvm.setClusterNode(node);
+                        xvm.startInstance();
                     } catch (PexException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
@@ -165,7 +167,7 @@ public class TestDispatcher2 {
     
     private static void testMigrate(String uuid, String host2) throws PexException{
         ReservationEntity one = new ReservationEntity("lol2");
-        one.setCpus((short) 1);
+        one.setType(InstanceType.SMALL);
         one.setStartTime(Calendar.getInstance().getTime());
         one.setEndTime(Calendar.getInstance().getTime());
         one.setUserid((short) 1);
@@ -187,7 +189,7 @@ public class TestDispatcher2 {
  
     private static void testDelete() throws PexException {
         ReservationEntity one = new ReservationEntity("lol2");
-        one.setCpus((short) 1);
+        one.setType(InstanceType.SMALL);
         one.setStartTime(Calendar.getInstance().getTime());
         one.setEndTime(Calendar.getInstance().getTime());
         one.setUserid((short) 1);

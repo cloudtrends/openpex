@@ -1,20 +1,3 @@
-//    “Copyright 2008, 2009 Srikumar Venugopal & James Broberg”
-//
-//    This file is part of OpenPEX.
-//
-//    OpenPEX is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 2 of the License, or
-//    (at your option) any later version.
-//
-//    OpenPEX is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with OpenPEX.  If not, see <http://www.gnu.org/licenses/>.
-
 package org.unimelb.openpex;
 
 import java.io.Serializable;
@@ -27,20 +10,17 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import javax.persistence.Temporal;
-import org.unimelb.openpex.reservation.PexReservationFailedException;
 
 import java.util.List;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import org.unimelb.openpex.reservation.PexReservationFailedException;
 import org.unimelb.openpex.reservation.ReservationEntity;
 
 @Entity
@@ -133,7 +113,7 @@ public abstract class ClusterNode implements Serializable {
         for (Calendar slot : slots.keySet()) {
             res.or(timeSlotMap.get(slot));
             logger.info(this.name + " No of vms upto slot " + slot.getTime() + " is " + res.cardinality());
-            if ((res.cardinality() + record.getCpus()) > allowed_vms) {
+            if ((res.cardinality() + record.getNumInstancesFixed()) > allowed_vms) {
                 logger.info(this.name + " Found a block at interval " + slot.getTime().toString());
                 result = false;
                 logger.info(this.name + " Reservation " + record.getRequestId() + " is infeasible ");
@@ -174,7 +154,7 @@ public abstract class ClusterNode implements Serializable {
                 slot = it.next();
                 BitSet r = timeSlotMap.get(slot);
                 res.or(r);
-                if (res.cardinality() + record.getCpus() > allowed_vms) {
+                if (res.cardinality() + record.getNumInstancesFixed() > allowed_vms) {
                     logger.info(this.name + " Found a block at interval " + slot.getTime().toString());
                     blocked = true;
                 }
@@ -209,7 +189,7 @@ public abstract class ClusterNode implements Serializable {
         Calendar newEnd = Calendar.getInstance();
         newEnd.setTime(record.getEndTime());
 
-        logger.info(this.name + " Committing reservation from " + newStart.getTime().toString() + " to " + newEnd.getTime().toString() + " for " + record.getCpus() + " cpus ");
+        logger.info(this.name + " Committing reservation from " + newStart.getTime().toString() + " to " + newEnd.getTime().toString() + " for " + record.getNumInstancesFixed() + " cpus ");
 
         /*
          * To cover the case if the reservation is far into the future, then create
@@ -231,7 +211,7 @@ public abstract class ClusterNode implements Serializable {
         for (Calendar slot : slots.keySet()) {
             BitSet res = timeSlotMap.get(slot);
             logger.info(this.name + " Found slot at " + slot.getTime().toString());
-            if (res.cardinality() + record.getCpus() > allowed_vms) {
+            if (res.cardinality() + record.getNumInstancesFixed() > allowed_vms) {
                 logger.severe(this.name + " Oh noes! Commit failed as the slot is already blocked");
                 throw new PexReservationFailedException("Failed commit");
             }
@@ -240,7 +220,7 @@ public abstract class ClusterNode implements Serializable {
              * 22/9 Currently, we consider that each reservation has atleast one CPU.
              * Set a bit for each CPU (core) that is requested by the reservation.  
              */
-            res.set(index, index + record.getCpus());
+            res.set(index, index + record.getNumInstancesFixed());
             logger.info(this.name + " Number of cores set at " + slot.getTime().toString() + " is " + res.cardinality());
         }
 
@@ -254,7 +234,7 @@ public abstract class ClusterNode implements Serializable {
         newSlot.add(Calendar.SECOND, (int) (SLOT_INTERVAL / 1000));
         while (newSlot.before(newEnd)) {
             BitSet map = new BitSet(allowed_vms);
-            map.set(0, record.getCpus(), true);
+            map.set(0, record.getNumInstancesFixed(), true);
             logger.info(this.name + " Adding slot into map for " + newSlot.getTime() + " " + map.cardinality());
             timeSlotMap.put((Calendar) newSlot.clone(), map);
             newSlot.add(Calendar.SECOND, (int) (SLOT_INTERVAL / 1000));
@@ -328,11 +308,6 @@ public abstract class ClusterNode implements Serializable {
     }
 
     public abstract void refresh() throws PexOperationFailedException;
-
-    @Override
-    public String toString() {
-        return name;
-    }
     /*	public boolean isFeasible(ReservationRecord record){
     
      * To check if a reservation is feasible, we have to get all already agreed reservations (slots) that have
