@@ -25,6 +25,7 @@ import org.unimelb.openpex.storage.PexStorage;
 import org.unimelb.openpex.storage.PexStorageFailedException;
 import org.unimelb.openpex.xen.XenClusterNode;
 import org.unimelb.openpex.xen.XenDispatcher;
+import org.unimelb.openpex.ClusterNode;
 
 public class NodeMonitor {
 

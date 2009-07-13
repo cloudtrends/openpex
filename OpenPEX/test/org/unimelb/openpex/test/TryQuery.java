@@ -20,12 +20,14 @@
  * and open the template in the editor.
  */
 
-package org.unimelb.openpex.storage;
+package org.unimelb.openpex.test;
 
+import org.unimelb.openpex.storage.*;
 import org.unimelb.openpex.reservation.ReservationEntity;
 import java.util.Calendar;
 import java.util.List;
 import org.unimelb.openpex.Constants.ReservationStatus;
+import org.unimelb.openpex.reservation.InstanceType;
 import org.unimelb.openpex.util.RandomGUID;
 
 /**
@@ -36,9 +38,10 @@ public class TryQuery{
     
     public static void tryQuery() throws PexStorageFailedException{
         ReservationEntity res = new ReservationEntity((new RandomGUID()).toString());
-        res.setCpus((short)1);
+        res.setType(InstanceType.SMALL);
         res.setTemplate("Provisioning Xen ");
-        res.setNumInstances((short)1);
+        res.setNumInstancesFixed((short)1);
+        res.setNumInstancesOption((short)0);
         res.setStartTime(Calendar.getInstance().getTime());
         res.setEndTime(Calendar.getInstance().getTime());
 //        res.setUserid((short)100);

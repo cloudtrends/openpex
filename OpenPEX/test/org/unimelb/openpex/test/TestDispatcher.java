@@ -66,7 +66,8 @@ public class TestDispatcher {
 				try {
 					xvm = new XenVMInstance();
 					xvm.setRecord(record);
-					xvm.startInstance(node);
+					xvm.setClusterNode(node);
+                    xvm.startInstance();
 				} catch (PexException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

@@ -1,22 +1,4 @@
-//    “Copyright 2008, 2009 Srikumar Venugopal & James Broberg”
-//
-//    This file is part of OpenPEX.
-//
-//    OpenPEX is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 2 of the License, or
-//    (at your option) any later version.
-//
-//    OpenPEX is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with OpenPEX.  If not, see <http://www.gnu.org/licenses/>.
-
 package org.unimelb.openpex;
-
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -37,12 +19,12 @@ import javax.persistence.Transient;
 import org.unimelb.openpex.VMListener.VMStatus;
 import org.unimelb.openpex.reservation.ReservationEntity;
 
+
 @Entity
 @Table(name = "PEX_VM")
 @NamedQueries({
     @NamedQuery(name="VMInstance.findByVmId", query="SELECT v FROM VMInstance v WHERE v.vmID = :vmID"),
-    @NamedQuery(name="VMInstance.findByStatus", query="SELECT v from VMInstance v WHERE v.status = :status"),
-    @NamedQuery(name="VMInstance.findByUserid", query="SELECT v from VMInstance v WHERE v.userID = :userID")
+    @NamedQuery(name="VMInstance.findByStatus", query="SELECT v from VMInstance v WHERE v.status = :status")
 })
 public abstract class VMInstance implements Serializable {
     
@@ -98,9 +80,10 @@ public abstract class VMInstance implements Serializable {
 
     /**
      * Starts the VM Instance
+     * Set the node before invoking this call or else an exception will be thrown
      * @throws PexException 
      */
-    public abstract void startInstance(ClusterNode node) throws PexOperationFailedException;
+    public abstract void startInstance() throws PexOperationFailedException;
 
     /**
      * Stops the VM Instance

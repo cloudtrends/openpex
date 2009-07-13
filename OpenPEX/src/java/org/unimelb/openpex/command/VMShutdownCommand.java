@@ -1,23 +1,13 @@
-//    “Copyright 2008, 2009 Srikumar Venugopal & James Broberg”
-//
-//    This file is part of OpenPEX.
-//
-//    OpenPEX is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 2 of the License, or
-//    (at your option) any later version.
-//
-//    OpenPEX is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with OpenPEX.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
 
 package org.unimelb.openpex.command;
 
-import org.unimelb.openpex.*;
+import org.unimelb.openpex.PexOperationFailedException;
+import org.unimelb.openpex.VMInstance;
+import org.unimelb.openpex.storage.PexStorage;
 
 /**
  *
@@ -25,17 +15,28 @@ import org.unimelb.openpex.*;
  */
 public class VMShutdownCommand extends PexCommand{
 
-    VMInstance vm = null;
-    public VMShutdownCommand(VMInstance vm){
-        this.vm = vm;
+    String vmID = "";
+    public VMShutdownCommand(String vmID){
+        this.vmID = vmID;
     }
     
-    public void execute() throws Exception{
+    public void execute() throws Exception {
+
+        PexStorage store = PexStorage.getInstance();
+        VMInstance vm = store.getVm(vmID);
+
+        if (vm == null) {
+            throw new PexOperationFailedException(
+                    "Did not find VM Instance given by the reference " + vmID);
+        }
         try {
             vm.stopInstance();
+            store.saveVM(vm);
         } catch (PexOperationFailedException ex) {
-            throw ex;
+            logger.severe("VM Stopping failed " + ex);
+            throw new PexOperationFailedException("VM stop oepration failed ");
         }
     }
+        
 
 }
