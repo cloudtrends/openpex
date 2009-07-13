@@ -20,7 +20,6 @@ public class ReservationProposal {
     private Calendar startTime = null;
     private long duration = 0;
     private InstanceType type;
-    private int CPUs = 0;
     private int userid = 0;
     private String template = "";
 
@@ -34,10 +33,9 @@ public class ReservationProposal {
 
     protected ReservationProposal(ReservationProposal request) {
         this.id = request.getId();
-        this.numInstancesFixed = request.getNumInstances();
+        this.numInstancesFixed = request.getNumInstancesFixed();
         this.startTime = request.getStartTime();
         this.duration = request.getDuration();
-        this.CPUs = request.getCPUs();
         this.template = request.getTemplate();
         this.userid = request.getUserid();
     }
@@ -58,20 +56,12 @@ public class ReservationProposal {
         this.duration = duration;
     }
 
-    public int getNumInstances() {
+    public int getNumInstancesFixed() {
         return numInstancesFixed;
     }
 
-    public void setNumInstances(int nodes) {
+    public void setNumInstancesFixed(int nodes) {
         this.numInstancesFixed = nodes;
-    }
-
-    public int getCPUs() {
-        return CPUs;
-    }
-
-    public void setCPUs(int cpus) {
-        this.CPUs = cpus;
     }
 
     public String getId() {
@@ -98,19 +88,11 @@ public class ReservationProposal {
         this.userid = userid;
     }
 
-    public int getNumInstancesFixed() {
-        return numInstancesFixed;
-    }
-
-    public void setNumInstancesFixed(int numInstancesFixed) {
-        this.numInstancesFixed = numInstancesFixed;
-    }
-
     public int getNumInstancesOption() {
         return numInstancesOption;
     }
 
-    public void setNumInstancesOption(int numInstancesOptional) {
+    public void setNumInstancesOption(int numInstancesOption) {
         this.numInstancesOption = numInstancesOption;
     }
 
