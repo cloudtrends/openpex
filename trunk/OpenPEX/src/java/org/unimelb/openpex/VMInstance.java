@@ -24,7 +24,8 @@ import org.unimelb.openpex.reservation.ReservationEntity;
 @Table(name = "PEX_VM")
 @NamedQueries({
     @NamedQuery(name="VMInstance.findByVmId", query="SELECT v FROM VMInstance v WHERE v.vmID = :vmID"),
-    @NamedQuery(name="VMInstance.findByStatus", query="SELECT v from VMInstance v WHERE v.status = :status")
+    @NamedQuery(name="VMInstance.findByStatus", query="SELECT v from VMInstance v WHERE v.status = :status"),
+    @NamedQuery(name="VMInstance.findByUserid", query="SELECT v from VMInstance v WHERE v.userID = :userID")
 })
 public abstract class VMInstance implements Serializable {
     
