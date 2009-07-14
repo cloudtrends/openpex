@@ -26,6 +26,7 @@
  */
 package org.unimelb.openpex.xen;
 
+import com.xensource.xenapi.Types.XenAPIException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,16 +60,12 @@ import com.xensource.xenapi.Task;
 import com.xensource.xenapi.Types;
 import com.xensource.xenapi.VM;
 import com.xensource.xenapi.Types.BadServerResponse;
-import com.xensource.xenapi.Types.BootloaderFailed;
 import com.xensource.xenapi.Types.OperationNotAllowed;
 import com.xensource.xenapi.Types.OtherOperationInProgress;
 import com.xensource.xenapi.Types.SessionAuthenticationFailed;
 import com.xensource.xenapi.Types.TaskStatusType;
-import com.xensource.xenapi.Types.UnknownBootloader;
 import com.xensource.xenapi.Types.VmBadPowerState;
 import com.xensource.xenapi.Types.VmIsTemplate;
-import com.xensource.xenapi.Types.VmMigrateFailed;
-import com.xensource.xenapi.Types.VmMissingPvDrivers;
 import com.xensource.xenapi.Types.VmPowerState;
 import com.xensource.xenapi.VIF;
 import com.xensource.xenapi.VM.Record;
@@ -155,7 +152,7 @@ public final class XenDispatcher {
                 }
             }
 
-        } catch (BadServerResponse e) {
+        } catch (XenAPIException e) {
             logger.severe("got bad response " + e.getMessage());
             throw new PexOperationFailedException("GetHostOperation failed ", e);
         } catch (XmlRpcException e) {
@@ -169,7 +166,7 @@ public final class XenDispatcher {
         Host.Record record = null;
         try {
             record = vhost.getRecord(xenConnection);
-        } catch (BadServerResponse e) {
+        } catch (XenAPIException e) {
             logger.severe("Server returned bad response " + e);
             throw new PexOperationFailedException("GetHostRecord failed ", e);
         } catch (XmlRpcException e) {
@@ -182,8 +179,9 @@ public final class XenDispatcher {
     public HostMetrics getHostMetrics(Host vhost) throws PexOperationFailedException {
         HostMetrics metrics = null;
         try {
-            metrics = vhost.getMetrics(xenConnection);
-        } catch (BadServerResponse e) {
+                metrics = vhost.getMetrics(xenConnection);
+
+        } catch (XenAPIException e) {
             logger.severe("Server returned bad response " + e);
             throw new PexOperationFailedException("GetHostMetrics failed ", e);
         } catch (XmlRpcException e) {
@@ -219,9 +217,9 @@ public final class XenDispatcher {
                 }
             }
 
-        } catch (Types.BadServerResponse e) {
+        } catch (XenAPIException e) {
             logger.severe("Server returned bad response " + e);
-            throw new PexOperationFailedException("GetTemplateVMs failed ", e);
+            throw new PexOperationFailedException("GetHostMetrics failed ", e);
         } catch (XmlRpcException e) {
             logger.severe("Server returned bad response " + e);
             throw new PexOperationFailedException("GetTemplateVMs failed ", e);
@@ -250,9 +248,9 @@ public final class XenDispatcher {
                 records.add(record);
             }
 
-        } catch (Types.BadServerResponse e) {
+        } catch (XenAPIException e) {
             logger.severe("Server returned bad response " + e);
-            throw new PexOperationFailedException("GetAllVMs failed ", e);
+            throw new PexOperationFailedException("GetHostMetrics failed ", e);
         } catch (XmlRpcException e) {
             logger.severe("Server returned bad response " + e);
             throw new PexOperationFailedException("GetAllVMs failed ", e);
@@ -358,8 +356,8 @@ public final class XenDispatcher {
         } catch (ExecutionException ex) {
             logger.severe("Something happened " + ex.getCause());
             throw new PexOperationFailedException("CreateVM failed ", ex.getCause());
-        } catch (Types.BadServerResponse e) {
-            logger.severe("Server did not like " + e);
+        } catch (XenAPIException e) {
+            logger.severe("An API call failed " + e);
             throw new PexOperationFailedException("CreateVM failed " + e);
         } catch (XmlRpcException e) {
             logger.severe("Xen RPC call failed " + e.getMessage());
@@ -483,29 +481,11 @@ public final class XenDispatcher {
             } else {
                 throw new PexOperationFailedException("VM is not stopped or is a template");
             }
-        } catch (Types.BadServerResponse e) {
-            logger.severe("Server did not like " + e.getMessage());
+        } catch (XenAPIException e) {
+            logger.severe("An API call failed " + e.getMessage());
             throw new PexOperationFailedException("vmStartfailed ", e);
         } catch (XmlRpcException e) {
             logger.severe("Xen RPC call failed " + e.getMessage());
-            throw new PexOperationFailedException("vmStartfailed ", e);
-        } catch (VmBadPowerState e) {
-            logger.severe("vm not in the power state " + e.getMessage());
-            throw new PexOperationFailedException("vmStartfailed ", e);
-        } catch (VmIsTemplate e) {
-            logger.severe("vm is a template " + e.getMessage());
-            throw new PexOperationFailedException("vmStartfailed ", e);
-        } catch (OtherOperationInProgress e) {
-            logger.severe("other operation in progress " + e.getMessage());
-            throw new PexOperationFailedException("vmStartfailed ", e);
-        } catch (OperationNotAllowed e) {
-            logger.severe("operation not allowed " + e.getMessage());
-            throw new PexOperationFailedException("vmStartfailed ", e);
-        } catch (BootloaderFailed e) {
-            logger.severe("boot loader failed " + e.getMessage());
-            throw new PexOperationFailedException("vmStartfailed ", e);
-        } catch (UnknownBootloader e) {
-            logger.severe("unknown bootloader " + e.getMessage());
             throw new PexOperationFailedException("vmStartfailed ", e);
         }
     }
@@ -561,26 +541,8 @@ public final class XenDispatcher {
         } catch (XmlRpcException e) {
             logger.severe("Xen RPC call failed " + e.getMessage());
             throw new PexOperationFailedException("vmMigrate failed ", e);
-        } catch (BadServerResponse e) {
-            logger.severe("Server did not like " + e.getMessage());
-            throw new PexOperationFailedException("vmMigrate failed ", e);
-        } catch (VmBadPowerState e) {
-            logger.severe("vm not in the power state " + e.getMessage());
-            throw new PexOperationFailedException("vmMigrate failed ", e);
-        } catch (OtherOperationInProgress e) {
-            logger.severe("Some other operation going on " + e.getMessage());
-            throw new PexOperationFailedException("vmMigrate failed ", e);
-        } catch (VmIsTemplate e) {
-            logger.severe("vm is a template " + e.getMessage());
-            throw new PexOperationFailedException("vmMigrate failed ", e);
-        } catch (OperationNotAllowed e) {
-            logger.severe("operation not allowed " + e.getMessage());
-            throw new PexOperationFailedException("vmMigrate failed ", e);
-        } catch (VmMigrateFailed e) {
-            logger.severe("vm migrate failed" + e.getMessage());
-            throw new PexOperationFailedException("vmMigrate failed ", e);
-        } catch (VmMissingPvDrivers e) {
-            logger.severe("vm missing pv drivers " + e.getMessage());
+        } catch (XenAPIException e) {
+            logger.severe("An API call failed " + e);
             throw new PexOperationFailedException("vmMigrate failed ", e);
         }
     }
@@ -626,20 +588,11 @@ public final class XenDispatcher {
             } else {
                 throw new PexOperationFailedException("VM is already halted");
             }
-        } catch (Types.BadServerResponse e) {
-            logger.severe("Something went wrong " + e.getMessage());
+        } catch (XenAPIException e) {
+            logger.severe("An API call failed " + e);
             throw new PexOperationFailedException("vmStop failed ", e);
         } catch (XmlRpcException e) {
             logger.severe("Xen RPC call failed " + e.getMessage());
-            throw new PexOperationFailedException("vmStop failed ", e);
-        } catch (VmBadPowerState e) {
-            logger.severe("VM was not in the state you thought " + e.getMessage());
-            throw new PexOperationFailedException("vmStop failed ", e);
-        } catch (OtherOperationInProgress e) {
-            throw new PexOperationFailedException("vmStop failed ", e);
-        } catch (OperationNotAllowed e) {
-            throw new PexOperationFailedException("vmStop failed ", e);
-        } catch (VmIsTemplate e) {
             throw new PexOperationFailedException("vmStop failed ", e);
         }
     }
@@ -689,10 +642,10 @@ public final class XenDispatcher {
             }else {
                 throw new PexOperationFailedException("VM is not halted.. call stopVm() before this operation");
             }
-        } catch (BadServerResponse ex) {
-            logger.severe("Something went wrong " + ex.getMessage());
-            throw new PexOperationFailedException("vmDelete failed ", ex);} 
-        catch (XmlRpcException ex) {
+        } catch (XenAPIException e) {
+            logger.severe("An API call failed " + e);
+            throw new PexOperationFailedException("vmDelete failed ", e); 
+        } catch (XmlRpcException ex) {
             logger.severe("Xen RPC call failed " + ex.getMessage());
             throw new PexOperationFailedException("vmStop failed ", ex);
         }
@@ -753,9 +706,9 @@ public final class XenDispatcher {
             throw new PexOperationFailedException("Reboot failed");
         } catch (VmIsTemplate ex) {
             throw new PexOperationFailedException("Reboot failed");
-        } catch (BadServerResponse ex) {
-            logger.severe("Something went wrong " + ex.getMessage());
-            throw new PexOperationFailedException("vm Reboot failed ", ex);
+        } catch (XenAPIException e) {
+            logger.severe("An API call failed " + e);
+            throw new PexOperationFailedException("vm Reboot failed ", e);
         } catch (XmlRpcException ex) {
             logger.severe("Xen RPC call failed " + ex.getMessage());
             throw new PexOperationFailedException("vm Reboot failed ", ex);
@@ -807,8 +760,8 @@ public final class XenDispatcher {
         try {
             VM vm = VM.getByUuid(xenConnection, uuid);
             vmr = vm.getRecord(xenConnection);
-        } catch (BadServerResponse ex) {
-            Logger.getLogger(XenDispatcher.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (XenAPIException e) {
+            logger.severe("An API call failed " + e);
         } catch (XmlRpcException ex) {
             Logger.getLogger(XenDispatcher.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -829,8 +782,8 @@ public final class XenDispatcher {
                 }
             }
 
-        } catch (Types.BadServerResponse e) {
-            logger.severe("Something went wrong " + e.getMessage());
+        } catch (XenAPIException e) {
+            logger.severe("An API call failed " + e);
         } catch (XmlRpcException e) {
             logger.severe("Xen RPC call failed " + e.getMessage());
         }
@@ -887,9 +840,9 @@ public final class XenDispatcher {
 //            logger.info("The mac of new VIF is.."+vifRec2.MAC);
             
         
-        } catch (BadServerResponse ex) {
-            Logger.getLogger(XenDispatcher.class.getName()).log(Level.SEVERE, null, ex);
-            throw new PexOperationFailedException("adding interface failed ", ex);
+        } catch (XenAPIException e) {
+            logger.severe("An API call failed " + e);
+            throw new PexOperationFailedException("adding interface failed ", e);
         } catch (XmlRpcException ex) {
             Logger.getLogger(XenDispatcher.class.getName()).log(Level.SEVERE, null, ex);
             throw new PexOperationFailedException("adding interface failed ", ex);
@@ -898,15 +851,9 @@ public final class XenDispatcher {
     }
 
     public void shutdown() throws InterruptedException {
-        try {
-            logger.info("Closing connection..");
-            xenConnection.dispose();
-
-        } catch (BadServerResponse ex) {
-            logger.severe("Unable to close connection" + ex);
-        } catch (XmlRpcException ex) {
-            logger.severe("Unable to close connection" + ex);
-        }
+        
+        logger.info("Closing connection..");
+        xenConnection.dispose();
         xenTaskService.shutdown();
         logger.info("Sent shutdown message to execution service");
         xenTaskService.awaitTermination(500, TimeUnit.MILLISECONDS);
