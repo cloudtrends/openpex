@@ -46,10 +46,10 @@ public abstract class ClusterNode implements Serializable {
     private List<ReservationEntity> reservations;
     
     /*
-     *Setting the max size of the timeslotmap in the mysql table to be 1 MB in bytes. 
+     *Setting the max size of the timeslotmap in the mysql table to be 16 MB in bytes.
      */
     @Lob
-    @Column(name="TREESLOTMAP", length=1048576)
+    @Column(name="TREESLOTMAP", length=16777215)
     private TreeMap<Calendar, BitSet> timeSlotMap = null;
     private int allowed_vms = 0;
 

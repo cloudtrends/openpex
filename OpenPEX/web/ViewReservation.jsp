@@ -66,7 +66,7 @@
                             </f:facet>
                         </ice:column>
                         <ice:column id="column2">
-                            <ice:outputText id="outputText3" value="#{currentRow['numInstances']}"/>
+                            <ice:outputText id="outputText3" value="#{currentRow['numInstancesFixed']}"/>
                             <f:facet name="header">
                                 <ice:outputText id="outputText4" value="# Instances"/>
                             </f:facet>
