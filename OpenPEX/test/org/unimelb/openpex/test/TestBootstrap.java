@@ -22,6 +22,7 @@ import java.util.Calendar;
 import org.unimelb.openpex.Bootstrap;
 import org.unimelb.openpex.PexException;
 import org.unimelb.openpex.ResourceManager;
+import org.unimelb.openpex.reservation.InstanceType;
 import org.unimelb.openpex.reservation.ReservationManager;
 import org.unimelb.openpex.reservation.ReservationProposal;
 import org.unimelb.openpex.reservation.ReservationReply;
@@ -37,8 +38,8 @@ public class TestBootstrap {
             String resID1 = rm.initiateReservation((short) 1);
             ReservationProposal proposal1 = new ReservationProposal(resID1);
             proposal1.setTemplate("PEX CentOS");
-            proposal1.setCPUs(1);
-            proposal1.setNumInstances(1);
+            proposal1.setNumInstancesFixed(1);
+            proposal1.setType(InstanceType.SMALL);
             Calendar startTime = Calendar.getInstance();
             startTime.add(Calendar.SECOND, 5 * 60);
             proposal1.setStartTime(startTime);

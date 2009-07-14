@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.xmlrpc.XmlRpcException;
 
 import com.xensource.xenapi.Connection;
@@ -42,20 +44,13 @@ import com.xensource.xenapi.Session;
 import com.xensource.xenapi.Types;
 import com.xensource.xenapi.VIF;
 import com.xensource.xenapi.VM;
-import com.xensource.xenapi.VMMetrics;
 import com.xensource.xenapi.Types.BadServerResponse;
 import com.xensource.xenapi.Types.BootloaderFailed;
-import com.xensource.xenapi.Types.LicenceRestriction;
-import com.xensource.xenapi.Types.NoHostsAvailable;
 import com.xensource.xenapi.Types.OperationNotAllowed;
 import com.xensource.xenapi.Types.OtherOperationInProgress;
-import com.xensource.xenapi.Types.SessionAuthenticationFailed;
 import com.xensource.xenapi.Types.UnknownBootloader;
 import com.xensource.xenapi.Types.VmBadPowerState;
-import com.xensource.xenapi.Types.VmHvmRequired;
 import com.xensource.xenapi.Types.VmIsTemplate;
-import com.xensource.xenapi.Types.VmMigrateFailed;
-import com.xensource.xenapi.Types.VmMissingPvDrivers;
 import com.xensource.xenapi.Types.VmPowerState;
 import com.xensource.xenapi.Types.XenAPIException;
 import com.xensource.xenapi.VM.Record;
@@ -74,10 +69,8 @@ public class TestAPI {
 			Session xenSession = Session.loginWithPassword(xenConnection, username, password, "1.2");
 		}catch(MalformedURLException e){
 			System.out.println("URL not valid");
-		} catch (BadServerResponse e) {
+		} catch (XenAPIException e) {
 			System.out.println("Server did not like msg "+e.getMessage());
-		} catch (SessionAuthenticationFailed e) {
-			System.out.println("Cannot authenticate "+e.getMessage());
 		} catch (XmlRpcException e) {
 			System.out.println("XML RPC call failed "+e.getMessage());
 		}
@@ -116,9 +109,8 @@ public class TestAPI {
 				String mac = vif.getMAC(xenConnection);
 				System.out.println(mac);
 			}
-		} catch (BadServerResponse e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (XenAPIException ex) {
+            Logger.getLogger(TestAPI.class.getName()).log(Level.SEVERE, null, ex);
 		} catch (XmlRpcException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -166,8 +158,8 @@ public class TestAPI {
 				}
 			}
 			
-		}catch(Types.BadServerResponse e){
-			System.err.println("Server did not like "+e.getMessage());
+		} catch (XenAPIException ex) {
+            Logger.getLogger(TestAPI.class.getName()).log(Level.SEVERE, null, ex);
 		} catch (XmlRpcException e) {
 			System.err.println("Xen RPC call failed "+e.getMessage());
 		} 
@@ -239,21 +231,9 @@ public class TestAPI {
 			vmInst.poolMigrate(xenConnection, host, options);
 		} catch(XmlRpcException e) {
 			System.err.println("Xen RPC call failed "+e.getMessage());
-		} catch (BadServerResponse e){
+		} catch (XenAPIException e){
 			System.err.println("Server did not like "+e.getMessage());
-		}catch (VmBadPowerState e) {
-			System.err.println("vm not in the power state "+e.getMessage());
-		}  catch (OtherOperationInProgress e) {
-			System.err.println("Some other operation going on "+e.getMessage());
-		} catch (VmIsTemplate e) {
-			System.err.println("vm is a template "+e.getMessage());
-		} catch (OperationNotAllowed e) {
-			System.err.println("operation not allowed "+e.getMessage());
-		} catch (VmMigrateFailed e) {
-			System.err.println("vm migrate failed"+e.getMessage());
-		} catch (VmMissingPvDrivers e) {
-			System.err.println("vm missing pv drivers "+e.getMessage());
-		}
+        }
 	}
 	
 	public void vmStop(int id){
@@ -273,19 +253,11 @@ public class TestAPI {
 				}
 			}
 			
-		}catch(Types.BadServerResponse e){
+		}catch(XenAPIException e){
 			System.err.println("Something went wrong "+e.getMessage());
 		} catch (XmlRpcException e) {
 			System.err.println("Xen RPC call failed "+e.getMessage());
-		} catch (VmBadPowerState e) {
-			System.err.println("VM was not in the state you thought "+e.getMessage());
-		} catch (OtherOperationInProgress e) {
-
-		} catch (OperationNotAllowed e) {
-
-		} catch (VmIsTemplate e) {
-
-		}
+		} 
 	}
 	
 	public void getInfo(){		
@@ -305,7 +277,7 @@ public class TestAPI {
 				}
 			}
 			
-		}catch(Types.BadServerResponse e){
+		}catch(XenAPIException e){
 			System.err.println("Something went wrong "+e.getMessage());
 		} catch (XmlRpcException e) {
 			System.err.println("Xen RPC call failed "+e.getMessage());
