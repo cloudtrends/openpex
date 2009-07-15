@@ -16,6 +16,12 @@ public enum InstanceType {
     LARGE(3,2034,"LARGE"),
     XLARGE(4,3072,"XLARGE");
 
+//    High Memory types
+//    SMALL_HM(1,1536,"SMALL_HM"),
+//    MEDIUM_HM(2,3072,"MEDIUM"),
+//    LARGE_HM(3,4068,"LARGE"),
+//    XLARGE_HM(4,6144,"XLARGE");
+
 
     InstanceType(int numCPU, int memory, String name){
         this.numCPU = numCPU;
