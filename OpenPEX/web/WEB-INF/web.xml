@@ -56,6 +56,14 @@
         <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
+    <servlet>
+        <servlet-name>Reservations</servlet-name>
+        <servlet-class>org.unimelb.openpex.rest.Reservations</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>Instances</servlet-name>
+        <servlet-class>org.unimelb.openpex.rest.Instances</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>Persistent Faces Servlet</servlet-name>
         <url-pattern>/xmlhttp/*</url-pattern>
@@ -83,6 +91,14 @@
     <servlet-mapping>
         <servlet-name>Persistent Faces Servlet</servlet-name>
         <url-pattern>*.jsp</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Reservations</servlet-name>
+        <url-pattern>/reservations/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Instances</servlet-name>
+        <url-pattern>/instances/*</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
