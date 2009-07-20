@@ -46,13 +46,62 @@ public class Reservations extends HttpServlet {
     PexStorage store = PexStorage.getInstance();
 
     /** 
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
+     * Processes requests for HTTP <code>GET</code> method.
      * @param request servlet request
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+    protected void processGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        JSONArray jsonResponse = new JSONArray();
+        response.setContentType("application/json");
+
+        //String auth = request.getHeader("Authorization");
+        //String user = request.getHeader("OpenPEX-User");
+        //String pass = request.getHeader("OpenPEX-Pass");
+
+        String path = request.getPathInfo();
+        short user = Short.parseShort(path.substring(1));
+
+        PrintWriter out = response.getWriter();
+
+        VmUser vmuser = store.getUserById(user);
+        List<ReservationEntity> reservations = store.getReservationsbyUserid(user);
+
+        for (Iterator it = reservations.iterator(); it.hasNext();) {
+            ReservationEntity re = (ReservationEntity) it.next();
+            HashMap mapRe = new HashMap();
+            mapRe.put("reservation_id", re.getRequestId());
+            mapRe.put("status", re.getStatus());
+            mapRe.put("templates", re.getTemplate());
+            mapRe.put("instance_type", re.getType());
+            mapRe.put("instances", re.getNumInstancesFixed());
+            mapRe.put("start_time", re.getStartTime().toString());
+            mapRe.put("end_time", re.getEndTime().toString());
+
+            jsonResponse.put(mapRe);
+        }
+
+
+        try {
+            out.print(jsonResponse.toString(3));
+        } catch (JSONException ex) {
+            Logger.getLogger(Reservations.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            out.close();
+        }
+    }
+
+     /**
+     * Processes requests for <code>POST</code> method.
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    protected void processPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         JSONArray jsonResponse = new JSONArray();
@@ -106,7 +155,7 @@ public class Reservations extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        processGet(request, response);
     }
 
     /** 
@@ -119,7 +168,7 @@ public class Reservations extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        processPost(request, response);
     }
 
     /** 
