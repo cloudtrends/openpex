@@ -59,16 +59,25 @@ public class Reservations extends HttpServlet {
         response.setContentType("application/json");
 
         //String auth = request.getHeader("Authorization");
-        //String user = request.getHeader("OpenPEX-User");
-        //String pass = request.getHeader("OpenPEX-Pass");
+        String user = request.getHeader("OpenPEX-User");
+        String pass = request.getHeader("OpenPEX-Pass");
 
-        String path = request.getPathInfo();
-        short user = Short.parseShort(path.substring(1));
+        //String path = request.getPathInfo();
+        //short user = Short.parseShort(path.substring(1));
+
+        if (user == null || pass == null) {
+            response.sendError(response.SC_BAD_REQUEST);
+            return;
+        } else {
+            System.out.println("Creds " + user + " " + pass);
+        }
 
         PrintWriter out = response.getWriter();
 
-        VmUser vmuser = store.getUserById(user);
-        List<ReservationEntity> reservations = store.getReservationsbyUserid(user);
+        VmUser vmuser = store.getUserByCred(user, pass);
+
+        
+        List<ReservationEntity> reservations = store.getReservationsbyUserid(vmuser.getUserid());
 
         for (Iterator it = reservations.iterator(); it.hasNext();) {
             ReservationEntity re = (ReservationEntity) it.next();
