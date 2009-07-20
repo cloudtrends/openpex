@@ -22,15 +22,18 @@ public class RESTfulClient {
 
     String resEndpoint = "http://tyrellcorp.csse.unimelb.edu.au:8080/OpenPex/reservations/";
     String instancesEndpoint = "http://tyrellcorp.csse.unimelb.edu.au:8080/OpenPex/reservations/";
+    String pexUser = "";
+    String pexPass = "";
 
     public String createReservationCall(String params) throws MalformedURLException, IOException {
         URL url = new URL(resEndpoint);
         InputStream in = url.openStream();
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.addRequestProperty("OpenPEX-User", "");
-        conn.addRequestProperty("OpenPEX-Pass", "");
+        conn.addRequestProperty("OpenPEX-User", pexUser);
+        conn.addRequestProperty("OpenPEX-Pass", pexPass);
+        conn.setRequestMethod("POST");
         String type = conn.getContentType();
-        
+
         return null;
     }
 
@@ -46,5 +49,17 @@ public class RESTfulClient {
         mapRe.put("end_time", re.getEndTime().toString());
         jsonResponse.put(mapRe);
         return jsonResponse.toString(3);
+    }
+
+    public String listReservationsCall(String params) throws MalformedURLException, IOException {
+        URL url = new URL(resEndpoint);
+        InputStream in = url.openStream();
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.addRequestProperty("OpenPEX-User", pexUser);
+        conn.addRequestProperty("OpenPEX-Pass", pexPass);
+        conn.setRequestMethod("GET");
+        String type = conn.getContentType();
+
+        return null;
     }
 }
