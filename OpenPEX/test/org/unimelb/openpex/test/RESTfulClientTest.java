@@ -11,15 +11,19 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 import java.util.HashMap;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.unimelb.openpex.reservation.InstanceType;
 import org.unimelb.openpex.reservation.ReservationEntity;
 
 /**
@@ -57,9 +61,23 @@ public class RESTfulClientTest {
         System.out.print(listReservationsCall());
     }
 
+    @Test
+    public void testCreateReservationsCall() throws MalformedURLException, IOException, JSONException {
+        ReservationEntity re = new ReservationEntity();
+        re.setTemplate("PEX Windows XP SP2 Template");
+        re.setType(InstanceType.SMALL);
+        re.setNumInstancesFixed(Short.parseShort("1"));
+        re.setStartTime(new Date(System.currentTimeMillis()));
+        re.setEndTime(new Date(System.currentTimeMillis() + 3600000));
+
+        String params = createReservation(re);
+    }
+
     public String createReservationCall(String params) throws MalformedURLException, IOException {
         URL url = new URL(resEndpoint);
-        InputStream in = url.openStream();
+        DataOutputStream out;
+        String response;
+
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
 
@@ -70,16 +88,32 @@ public class RESTfulClientTest {
         conn.setDoOutput(true);
         conn.setUseCaches(false);
 
-        String type = conn.getContentType();
+        conn.setRequestProperty("Content-Type", "application/json");
+        // Send POST output.
+        out = new DataOutputStream(conn.getOutputStream());
+        
+        out.writeBytes(params);
+        out.flush();
+        out.close();
 
-        return null;
+        BufferedReader reader = new BufferedReader(
+                new InputStreamReader(conn.getInputStream()));
+        String line = reader.readLine();
+        StringBuffer content = new StringBuffer();
+        while (line != null) {
+            content.append(line + "\n");
+            line = reader.readLine();
+        }
+        response = content.toString();
+        reader.close();
+        conn.disconnect();
+
+        return response;
     }
 
     public String createReservation(ReservationEntity re) throws JSONException {
         JSONArray jsonResponse = new JSONArray();
         HashMap mapRe = new HashMap();
-        mapRe.put("reservation_id", re.getRequestId());
-        mapRe.put("status", re.getStatus());
         mapRe.put("templates", re.getTemplate());
         mapRe.put("instance_type", re.getType());
         mapRe.put("instances", re.getNumInstancesFixed());

@@ -17,6 +17,7 @@
 
 package org.unimelb.openpex.rest;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
@@ -114,42 +115,41 @@ public class Reservations extends HttpServlet {
             throws ServletException, IOException {
 
         JSONArray jsonResponse = new JSONArray();
+        JSONArray jsonRequest;
+        
         response.setContentType("application/json");
 
         //String auth = request.getHeader("Authorization");
-        //String user = request.getHeader("OpenPEX-User");
-        //String pass = request.getHeader("OpenPEX-Pass");
+        String user = request.getHeader("OpenPEX-User");
+        String pass = request.getHeader("OpenPEX-Pass");
 
-        String path = request.getPathInfo();
-        short user = Short.parseShort(path.substring(1));
+        if (user == null || pass == null) {
+            response.sendError(response.SC_BAD_REQUEST);
+            return;
+        } else {
+            System.out.println("Creds " + user + " " + pass);
+            
+        }
+
+        BufferedReader reader = request.getReader();
+        String line = reader.readLine();
+        StringBuffer content = new StringBuffer();
+        while (line != null) {
+            content.append(line + "\n");
+            line = reader.readLine();
+        }
+        try {
+            jsonRequest = new JSONArray(content);
+        } catch (JSONException ex) {
+            Logger.getLogger(Reservations.class.getName()).log(Level.SEVERE, null, ex);
+            response.sendError(response.SC_BAD_REQUEST);
+            return;
+        }
+        
 
         PrintWriter out = response.getWriter();
 
-        VmUser vmuser = store.getUserById(user);
-        List<ReservationEntity> reservations = store.getReservationsbyUserid(user);
 
-        for (Iterator it = reservations.iterator(); it.hasNext();) {
-            ReservationEntity re = (ReservationEntity) it.next();
-            HashMap mapRe = new HashMap();
-            mapRe.put("reservation_id", re.getRequestId());
-            mapRe.put("status", re.getStatus());
-            mapRe.put("templates", re.getTemplate());
-            mapRe.put("instance_type", re.getType());
-            mapRe.put("instances", re.getNumInstancesFixed());
-            mapRe.put("start_time", re.getStartTime().toString());
-            mapRe.put("end_time", re.getEndTime().toString());
-
-            jsonResponse.put(mapRe);
-        }
-
-
-        try {
-            out.print(jsonResponse.toString(3));
-        } catch (JSONException ex) {
-            Logger.getLogger(Reservations.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            out.close();
-        }
     }
 
 
