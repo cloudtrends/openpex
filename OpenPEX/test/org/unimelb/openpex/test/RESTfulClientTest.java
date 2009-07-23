@@ -11,18 +11,15 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
-import org.json.JSONArray;
-import org.json.JSONException;
+import net.sf.json.JSONObject;
 import org.unimelb.openpex.reservation.InstanceType;
 import org.unimelb.openpex.reservation.ReservationEntity;
 
@@ -62,7 +59,7 @@ public class RESTfulClientTest {
     }
 
     @Test
-    public void testCreateReservationsCall() throws MalformedURLException, IOException, JSONException {
+    public void testCreateReservationsCall() throws MalformedURLException, IOException {
         ReservationEntity re = new ReservationEntity();
         re.setTemplate("PEX Windows XP SP2 Template");
         re.setType(InstanceType.SMALL);
@@ -111,15 +108,15 @@ public class RESTfulClientTest {
         return response;
     }
 
-    public String createReservation(ReservationEntity re) throws JSONException {
-        JSONArray jsonResponse = new JSONArray();
+    public String createReservation(ReservationEntity re) {
+        JSONObject jsonResponse = new JSONObject();
         HashMap mapRe = new HashMap();
         mapRe.put("templates", re.getTemplate());
         mapRe.put("instance_type", re.getType());
         mapRe.put("instances", re.getNumInstancesFixed());
         mapRe.put("start_time", re.getStartTime().toString());
         mapRe.put("end_time", re.getEndTime().toString());
-        jsonResponse.put(mapRe);
+        jsonResponse.putAll(mapRe);
         return jsonResponse.toString(3);
     }
 
