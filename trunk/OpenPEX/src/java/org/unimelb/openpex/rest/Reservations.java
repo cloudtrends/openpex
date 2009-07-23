@@ -14,26 +14,28 @@
 //
 //    You should have received a copy of the GNU General Public License
 //    along with OpenPEX.  If not, see <http://www.gnu.org/licenses/>.
-
 package org.unimelb.openpex.rest;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONWriter;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONException;
+import net.sf.json.JSONObject;
+import net.sf.json.JSONSerializer;
+import net.sf.json.JsonConfig;
+import net.sf.json.util.CycleDetectionStrategy;
+import net.sf.json.util.PropertyFilter;
 import org.unimelb.openpex.VmUser;
 import org.unimelb.openpex.reservation.ReservationEntity;
 import org.unimelb.openpex.storage.PexStorage;
@@ -77,34 +79,47 @@ public class Reservations extends HttpServlet {
 
         VmUser vmuser = store.getUserByCred(user, pass);
 
-        
+
         List<ReservationEntity> reservations = store.getReservationsbyUserid(vmuser.getUserid());
 
-        for (Iterator it = reservations.iterator(); it.hasNext();) {
-            ReservationEntity re = (ReservationEntity) it.next();
-            HashMap mapRe = new HashMap();
-            mapRe.put("reservation_id", re.getRequestId());
-            mapRe.put("status", re.getStatus());
-            mapRe.put("templates", re.getTemplate());
-            mapRe.put("instance_type", re.getType());
-            mapRe.put("instances", re.getNumInstancesFixed());
-            mapRe.put("start_time", re.getStartTime().toString());
-            mapRe.put("end_time", re.getEndTime().toString());
+        JsonConfig jsonConfig = new JsonConfig();
+        jsonConfig.setJsonPropertyFilter(new PropertyFilter() {
+            public boolean apply(Object source, String name, Object value) {
+                if (value != null && Date.class.isAssignableFrom( value.getClass() )) {
+                    return true;
+                }
+                return false;
+            }
+        });
+        jsonConfig.setCycleDetectionStrategy(CycleDetectionStrategy.LENIENT);
 
-            jsonResponse.put(mapRe);
-        }
+        jsonResponse.addAll(reservations, jsonConfig);
+
+//        for (Iterator it = reservations.iterator(); it.hasNext();) {
+//            ReservationEntity re = (ReservationEntity) it.next();
+//            HashMap mapRe = new HashMap();
+//            mapRe.put("reservation_id", re.getRequestId());
+//            mapRe.put("status", re.getStatus());
+//            mapRe.put("templates", re.getTemplate());
+//            mapRe.put("instance_type", re.getType());
+//            mapRe.put("instances", re.getNumInstancesFixed());
+//            mapRe.put("start_time", re.getStartTime().toString());
+//            mapRe.put("end_time", re.getEndTime().toString());
+//
+//            JSONObject jsonObject = (JSONObject) JSONSerializer.toJSON( mapRe );
+//
+//            jsonResponse.add(jsonObject);
+//
+//        }
 
 
-        try {
-            out.print(jsonResponse.toString(3));
-        } catch (JSONException ex) {
-            Logger.getLogger(Reservations.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            out.close();
-        }
+
+        out.print(jsonResponse.toString(3));
+        out.close();
+
     }
 
-     /**
+    /**
      * Processes requests for <code>POST</code> method.
      * @param request servlet request
      * @param response servlet response
@@ -114,9 +129,9 @@ public class Reservations extends HttpServlet {
     protected void processPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        JSONArray jsonResponse = new JSONArray();
-        JSONArray jsonRequest;
-        
+        JSONObject jsonResponse = new JSONObject();
+        JSONObject jsonRequest;
+
         response.setContentType("application/json");
 
         //String auth = request.getHeader("Authorization");
@@ -128,7 +143,7 @@ public class Reservations extends HttpServlet {
             return;
         } else {
             System.out.println("Creds " + user + " " + pass);
-            
+
         }
 
         BufferedReader reader = request.getReader();
@@ -138,14 +153,9 @@ public class Reservations extends HttpServlet {
             content.append(line + "\n");
             line = reader.readLine();
         }
-        try {
-            jsonRequest = new JSONArray(content);
-        } catch (JSONException ex) {
-            Logger.getLogger(Reservations.class.getName()).log(Level.SEVERE, null, ex);
-            response.sendError(response.SC_BAD_REQUEST);
-            return;
-        }
-        
+        jsonRequest = new JSONObject();
+
+
 
         PrintWriter out = response.getWriter();
 

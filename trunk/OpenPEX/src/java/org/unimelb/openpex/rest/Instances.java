@@ -15,8 +15,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.json.JSONArray;
-import org.json.JSONException;
+import net.sf.json.JSONArray;
 import org.unimelb.openpex.VMInstance;
 import org.unimelb.openpex.VmUser;
 import org.unimelb.openpex.storage.PexStorage;
@@ -61,31 +60,31 @@ public class Instances extends HttpServlet {
 
         List<VMInstance> instances = store.getVMInstancesbyUserid(vmuser.getUserid());
 
-        for (Iterator it = instances.iterator(); it.hasNext();) {
-            VMInstance vm = (VMInstance) it.next();
-            HashMap mapVm = new HashMap();
-            mapVm.put("vm_id", vm.getVmID());
-            mapVm.put("reservation_id", vm.getReservation().getRequestId());
-            mapVm.put("start_time", vm.getStart_time().toString());
-            mapVm.put("end_time", vm.getEnd_time().toString());
-            mapVm.put("name", vm.getName());
-            mapVm.put("ip_address", vm.getIpAddress());
-            mapVm.put("status", vm.getStatus());
-            mapVm.put("userid", vm.getUserID());
-            mapVm.put("vm_pass", vm.getVmPassword());
-            mapVm.put("node_name", vm.getClusterNode().getName());
+        jsonResponse.addAll(instances);
 
-            jsonResponse.put(mapVm);
-        }
+//        for (Iterator it = instances.iterator(); it.hasNext();) {
+//            VMInstance vm = (VMInstance) it.next();
+//            HashMap mapVm = new HashMap();
+//            mapVm.put("vm_id", vm.getVmID());
+//            mapVm.put("reservation_id", vm.getReservation().getRequestId());
+//            mapVm.put("start_time", vm.getStart_time().toString());
+//            mapVm.put("end_time", vm.getEnd_time().toString());
+//            mapVm.put("name", vm.getName());
+//            mapVm.put("ip_address", vm.getIpAddress());
+//            mapVm.put("status", vm.getStatus());
+//            mapVm.put("userid", vm.getUserID());
+//            mapVm.put("vm_pass", vm.getVmPassword());
+//            mapVm.put("node_name", vm.getClusterNode().getName());
+//
+//            jsonResponse.addAll(mapVm);
+//        }
 
 
-        try {
-            out.print(jsonResponse.toString(3));
-        } catch (JSONException ex) {
-            Logger.getLogger(Reservations.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            out.close();
-        }
+
+        out.print(jsonResponse.toString(3));
+
+        out.close();
+
     }
 
     /** 
