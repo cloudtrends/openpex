@@ -20,19 +20,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONArray;
-import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
 import net.sf.json.JsonConfig;
 import net.sf.json.util.CycleDetectionStrategy;
 import net.sf.json.util.PropertyFilter;
@@ -78,42 +72,22 @@ public class Reservations extends HttpServlet {
         PrintWriter out = response.getWriter();
 
         VmUser vmuser = store.getUserByCred(user, pass);
-
-
         List<ReservationEntity> reservations = store.getReservationsbyUserid(vmuser.getUserid());
 
         JsonConfig jsonConfig = new JsonConfig();
         jsonConfig.setJsonPropertyFilter(new PropertyFilter() {
+
             public boolean apply(Object source, String name, Object value) {
-                if (value != null && Date.class.isAssignableFrom( value.getClass() )) {
+                if ("vmSet".equals(name) || "nodes".equals(name)) {
                     return true;
                 }
                 return false;
             }
         });
+
         jsonConfig.setCycleDetectionStrategy(CycleDetectionStrategy.LENIENT);
-
+        jsonConfig.setIgnoreJPATransient(true);
         jsonResponse.addAll(reservations, jsonConfig);
-
-//        for (Iterator it = reservations.iterator(); it.hasNext();) {
-//            ReservationEntity re = (ReservationEntity) it.next();
-//            HashMap mapRe = new HashMap();
-//            mapRe.put("reservation_id", re.getRequestId());
-//            mapRe.put("status", re.getStatus());
-//            mapRe.put("templates", re.getTemplate());
-//            mapRe.put("instance_type", re.getType());
-//            mapRe.put("instances", re.getNumInstancesFixed());
-//            mapRe.put("start_time", re.getStartTime().toString());
-//            mapRe.put("end_time", re.getEndTime().toString());
-//
-//            JSONObject jsonObject = (JSONObject) JSONSerializer.toJSON( mapRe );
-//
-//            jsonResponse.add(jsonObject);
-//
-//        }
-
-
-
         out.print(jsonResponse.toString(3));
         out.close();
 

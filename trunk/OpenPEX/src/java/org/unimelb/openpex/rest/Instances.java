@@ -6,16 +6,15 @@ package org.unimelb.openpex.rest;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONArray;
+import net.sf.json.JsonConfig;
+import net.sf.json.util.CycleDetectionStrategy;
+import net.sf.json.util.PropertyFilter;
 import org.unimelb.openpex.VMInstance;
 import org.unimelb.openpex.VmUser;
 import org.unimelb.openpex.storage.PexStorage;
@@ -60,29 +59,21 @@ public class Instances extends HttpServlet {
 
         List<VMInstance> instances = store.getVMInstancesbyUserid(vmuser.getUserid());
 
-        jsonResponse.addAll(instances);
+        JsonConfig jsonConfig = new JsonConfig();
+        jsonConfig.setJsonPropertyFilter(new PropertyFilter() {
 
-//        for (Iterator it = instances.iterator(); it.hasNext();) {
-//            VMInstance vm = (VMInstance) it.next();
-//            HashMap mapVm = new HashMap();
-//            mapVm.put("vm_id", vm.getVmID());
-//            mapVm.put("reservation_id", vm.getReservation().getRequestId());
-//            mapVm.put("start_time", vm.getStart_time().toString());
-//            mapVm.put("end_time", vm.getEnd_time().toString());
-//            mapVm.put("name", vm.getName());
-//            mapVm.put("ip_address", vm.getIpAddress());
-//            mapVm.put("status", vm.getStatus());
-//            mapVm.put("userid", vm.getUserID());
-//            mapVm.put("vm_pass", vm.getVmPassword());
-//            mapVm.put("node_name", vm.getClusterNode().getName());
-//
-//            jsonResponse.addAll(mapVm);
-//        }
+            public boolean apply(Object source, String name, Object value) {
+                if ("reservation".equals(name) || "clusterNode".equals(name)) {
+                    return true;
+                }
+                return false;
+            }
+        });
 
-
-
+        jsonConfig.setCycleDetectionStrategy(CycleDetectionStrategy.LENIENT);
+        jsonConfig.setIgnoreJPATransient(true);
+        jsonResponse.addAll(instances, jsonConfig);
         out.print(jsonResponse.toString(3));
-
         out.close();
 
     }
