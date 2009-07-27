@@ -158,14 +158,14 @@ public class Reservations extends HttpServlet {
 
         jsonRequest = (JSONObject) JSONSerializer.toJSON(content);
         JsonConfig jsonConfig = new JsonConfig();
-        jsonConfig.setJsonPropertyFilter(new PropertyFilter() {
-            public boolean apply(Object source, String name, Object value) {
-                if ("id".equals(name) || "userid".equals(name)) {
-                    return true;
-                }
-                return false;
-            }
-        });
+//        jsonConfig.setJsonPropertyFilter(new PropertyFilter() {
+//            public boolean apply(Object source, String name, Object value) {
+//                if ("id".equals(name) || "userid".equals(name)) {
+//                    return true;
+//                }
+//                return false;
+//            }
+//        });
         jsonConfig.setRootClass( ReservationProposal.class );
 
         proposal = (ReservationProposal) JSONSerializer.toJava(jsonRequest, jsonConfig);
