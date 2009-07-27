@@ -17,11 +17,16 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import net.sf.json.JSONObject;
+import net.sf.json.JSONSerializer;
+import net.sf.json.JsonConfig;
+import net.sf.json.util.PropertyFilter;
 import org.unimelb.openpex.reservation.InstanceType;
 import org.unimelb.openpex.reservation.ReservationEntity;
+import org.unimelb.openpex.reservation.ReservationProposal;
 
 /**
  *
@@ -59,15 +64,24 @@ public class RESTfulClientTest {
     }
 
     @Test
+    public void testListInstancesCall() throws MalformedURLException, IOException {
+        System.out.print(listInstancesCall());
+    }
+
+    @Test
     public void testCreateReservationsCall() throws MalformedURLException, IOException {
-        ReservationEntity re = new ReservationEntity();
+        ReservationProposal re = new ReservationProposal();
+        Calendar startTime_ = Calendar.getInstance();
+        startTime_.setTimeInMillis(System.currentTimeMillis());
         re.setTemplate("PEX Windows XP SP2 Template");
         re.setType(InstanceType.SMALL);
-        re.setNumInstancesFixed(Short.parseShort("1"));
-        re.setStartTime(new Date(System.currentTimeMillis()));
-        re.setEndTime(new Date(System.currentTimeMillis() + 3600000));
+        re.setStartTime(startTime_);
+        re.setDuration(3600000);
+        re.setNumInstancesFixed(1);
+        re.setNumInstancesOption(0);
 
         String params = createReservation(re);
+        System.out.println(createReservationCall(params));
     }
 
     public String createReservationCall(String params) throws MalformedURLException, IOException {
@@ -88,7 +102,7 @@ public class RESTfulClientTest {
         conn.setRequestProperty("Content-Type", "application/json");
         // Send POST output.
         out = new DataOutputStream(conn.getOutputStream());
-        
+
         out.writeBytes(params);
         out.flush();
         out.close();
@@ -108,20 +122,49 @@ public class RESTfulClientTest {
         return response;
     }
 
-    public String createReservation(ReservationEntity re) {
-        JSONObject jsonResponse = new JSONObject();
-        HashMap mapRe = new HashMap();
-        mapRe.put("templates", re.getTemplate());
-        mapRe.put("instance_type", re.getType());
-        mapRe.put("instances", re.getNumInstancesFixed());
-        mapRe.put("start_time", re.getStartTime().toString());
-        mapRe.put("end_time", re.getEndTime().toString());
-        jsonResponse.putAll(mapRe);
+    public String createReservation(ReservationProposal re) {
+        JsonConfig jsonConfig = new JsonConfig();
+        jsonConfig.setJsonPropertyFilter(new PropertyFilter() {
+
+            public boolean apply(Object source, String name, Object value) {
+                if ("id".equals(name) || "userid".equals(name)) {
+                    return true;
+                }
+                return false;
+            }
+        });
+        JSONObject jsonResponse = (JSONObject) JSONSerializer.toJSON(re,jsonConfig);
         return jsonResponse.toString(3);
     }
 
     public String listReservationsCall() throws MalformedURLException, IOException {
         URL url = new URL(resEndpoint);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.addRequestProperty("OpenPEX-User", pexUser);
+        conn.addRequestProperty("OpenPEX-Pass", pexPass);
+        conn.setRequestMethod("GET");
+
+        conn.setDoInput(true);
+        conn.setUseCaches(false);
+        String response;
+
+        BufferedReader reader = new BufferedReader(
+                new InputStreamReader(conn.getInputStream()));
+        String line = reader.readLine();
+        StringBuffer content = new StringBuffer();
+        while (line != null) {
+            content.append(line + "\n");
+            line = reader.readLine();
+        }
+        response = content.toString();
+        reader.close();
+        conn.disconnect();
+
+        return response;
+    }
+
+    public String listInstancesCall() throws MalformedURLException, IOException {
+        URL url = new URL(instancesEndpoint);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.addRequestProperty("OpenPEX-User", pexUser);
         conn.addRequestProperty("OpenPEX-Pass", pexPass);

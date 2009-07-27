@@ -21,17 +21,26 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.JSONSerializer;
 import net.sf.json.JsonConfig;
+import net.sf.json.processors.JsDateJsonBeanProcessor;
 import net.sf.json.util.CycleDetectionStrategy;
 import net.sf.json.util.PropertyFilter;
+import org.unimelb.openpex.PexException;
+import org.unimelb.openpex.ResourceManager;
 import org.unimelb.openpex.VmUser;
 import org.unimelb.openpex.reservation.ReservationEntity;
+import org.unimelb.openpex.reservation.ReservationManager;
+import org.unimelb.openpex.reservation.ReservationProposal;
+import org.unimelb.openpex.reservation.ReservationReply;
 import org.unimelb.openpex.storage.PexStorage;
 
 /**
@@ -41,6 +50,7 @@ import org.unimelb.openpex.storage.PexStorage;
 public class Reservations extends HttpServlet {
 
     PexStorage store = PexStorage.getInstance();
+    ReservationManager rm;
 
     /** 
      * Processes requests for HTTP <code>GET</code> method.
@@ -85,6 +95,10 @@ public class Reservations extends HttpServlet {
             }
         });
 
+        // Transforms java.util.Date into a JSONObject ideal for JsDate conversion.
+        jsonConfig.registerJsonBeanProcessor( Date.class, new JsDateJsonBeanProcessor() );
+
+
         jsonConfig.setCycleDetectionStrategy(CycleDetectionStrategy.LENIENT);
         jsonConfig.setIgnoreJPATransient(true);
         jsonResponse.addAll(reservations, jsonConfig);
@@ -105,6 +119,8 @@ public class Reservations extends HttpServlet {
 
         JSONObject jsonResponse = new JSONObject();
         JSONObject jsonRequest;
+        ReservationProposal proposal = null;
+        String resID = null;
 
         response.setContentType("application/json");
 
@@ -120,6 +136,15 @@ public class Reservations extends HttpServlet {
 
         }
 
+        VmUser vmuser = store.getUserByCred(user, pass);
+
+        try {
+            rm = ResourceManager.getInstance();
+            resID = rm.initiateReservation(vmuser.getUserid());
+        } catch (PexException ex) {
+            Logger.getLogger(Reservations.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
         BufferedReader reader = request.getReader();
         String line = reader.readLine();
         StringBuffer content = new StringBuffer();
@@ -127,7 +152,43 @@ public class Reservations extends HttpServlet {
             content.append(line + "\n");
             line = reader.readLine();
         }
-        jsonRequest = new JSONObject();
+
+        System.out.println("Received:");
+        System.out.println(content.toString());
+
+        jsonRequest = (JSONObject) JSONSerializer.toJSON(content);
+        JsonConfig jsonConfig = new JsonConfig();
+        jsonConfig.setJsonPropertyFilter(new PropertyFilter() {
+            public boolean apply(Object source, String name, Object value) {
+                if ("id".equals(name) || "userid".equals(name)) {
+                    return true;
+                }
+                return false;
+            }
+        });
+        jsonConfig.setRootClass( ReservationProposal.class );
+
+        proposal = (ReservationProposal) JSONSerializer.toJava(jsonRequest, jsonConfig);
+        proposal.setUserid(vmuser.getUserid());
+
+
+
+        try {
+            ReservationReply reply = rm.requestReservation(resID, proposal);
+            if (reply.getReply() == ReservationReply.ReservationReplyType.ACCEPT) {
+                //error("Reservation Accepted");
+                rm.confirmReservation(resID, proposal);
+            } else if (reply.getReply() == ReservationReply.ReservationReplyType.COUNTER) {
+                //Logger.getLogger(SessionBean1.class.getName()).log(Level.INFO, "Counter " + reply.getProposal().getStartTime().getTime().toString() + " " + reply.getProposal().getDuration());
+                //sessBean.setReply(reply);
+                //return;
+            } else {
+                //error("Reservation Not Accepted");
+            }
+        } catch (PexException e) {
+            e.printStackTrace();
+        }
+
 
 
 
