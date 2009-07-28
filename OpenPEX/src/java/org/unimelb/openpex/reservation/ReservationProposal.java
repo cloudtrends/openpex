@@ -17,7 +17,7 @@ public class ReservationProposal {
     private String id = "";
     private int numInstancesFixed = 0;
     private int numInstancesOption = 0;
-    private Calendar startTime = null;
+    private Date startTime = null;
     private long duration = 0;
     private InstanceType type;
     private int userid = 0;
@@ -40,11 +40,11 @@ public class ReservationProposal {
         this.userid = request.getUserid();
     }
 
-    public Calendar getStartTime() {
+    public Date getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(Calendar startTime) {
+    public void setStartTime(Date startTime) {
         this.startTime = startTime;
     }
 
@@ -114,9 +114,9 @@ public class ReservationProposal {
         re.setNumInstancesFixed((short)numInstancesFixed);
         re.setNumInstancesOption((short)numInstancesOption);
         re.setTemplate(this.getTemplate());
-        re.setStartTime(this.getStartTime().getTime());
+        re.setStartTime(this.getStartTime());
         Date endTime = new Date();
-        endTime.setTime(this.getStartTime().getTimeInMillis() + (long) this.getDuration());
+        endTime.setTime(this.getStartTime().getTime() + (long) this.getDuration());
         re.setEndTime(endTime);
         return re;
 

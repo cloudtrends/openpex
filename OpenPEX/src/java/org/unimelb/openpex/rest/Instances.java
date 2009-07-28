@@ -6,6 +6,7 @@ package org.unimelb.openpex.rest;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Date;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -69,6 +70,9 @@ public class Instances extends HttpServlet {
                 return false;
             }
         });
+
+        jsonConfig.registerJsonValueProcessor(Date.class, new JsonHTTPDateValueProcessor());
+
 
         jsonConfig.setCycleDetectionStrategy(CycleDetectionStrategy.LENIENT);
         jsonConfig.setIgnoreJPATransient(true);

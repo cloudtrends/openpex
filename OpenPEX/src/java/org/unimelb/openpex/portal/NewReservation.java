@@ -456,7 +456,7 @@ public class NewReservation extends AbstractPageBean {
             proposal1.setTemplate(this.getSelectedTemplate());
             proposal1.setType(InstanceType.SMALL);
             proposal1.setNumInstancesFixed(1);
-            proposal1.setStartTime(beginTime);
+            proposal1.setStartTime(beginTime.getTime());
             proposal1.setDuration(duration);
             proposal1.setUserid(sessBean.getUser().getUserid());
             try {
@@ -465,7 +465,7 @@ public class NewReservation extends AbstractPageBean {
                     error("Reservation Accepted");
                     rm.confirmReservation(resID, proposal1);
                 } else if (reply.getReply() == ReservationReply.ReservationReplyType.COUNTER) {
-                    Logger.getLogger(SessionBean1.class.getName()).log(Level.INFO, "Counter " + reply.getProposal().getStartTime().getTime().toString() + " " + reply.getProposal().getDuration());
+                    Logger.getLogger(SessionBean1.class.getName()).log(Level.INFO, "Counter " + reply.getProposal().getStartTime().toString() + " " + reply.getProposal().getDuration());
                     sessBean.setReply(reply);
                     return;
                 } else {
