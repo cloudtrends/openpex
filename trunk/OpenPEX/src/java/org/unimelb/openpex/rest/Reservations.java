@@ -19,8 +19,12 @@ package org.unimelb.openpex.rest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -32,7 +36,10 @@ import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
 import net.sf.json.JsonConfig;
 import net.sf.json.processors.JsDateJsonBeanProcessor;
+import net.sf.json.processors.JsDateJsonValueProcessor;
+import net.sf.json.processors.JsonValueProcessor;
 import net.sf.json.util.CycleDetectionStrategy;
+import net.sf.json.util.NewBeanInstanceStrategy;
 import net.sf.json.util.PropertyFilter;
 import org.unimelb.openpex.PexException;
 import org.unimelb.openpex.ResourceManager;
@@ -61,7 +68,6 @@ public class Reservations extends HttpServlet {
      */
     protected void processGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         JSONArray jsonResponse = new JSONArray();
         response.setContentType("application/json");
 
@@ -82,6 +88,7 @@ public class Reservations extends HttpServlet {
         PrintWriter out = response.getWriter();
 
         VmUser vmuser = store.getUserByCred(user, pass);
+
         List<ReservationEntity> reservations = store.getReservationsbyUserid(vmuser.getUserid());
 
         JsonConfig jsonConfig = new JsonConfig();
@@ -96,7 +103,10 @@ public class Reservations extends HttpServlet {
         });
 
         // Transforms java.util.Date into a JSONObject ideal for JsDate conversion.
-        jsonConfig.registerJsonBeanProcessor( Date.class, new JsDateJsonBeanProcessor() );
+        // jsonConfig.registerJsonBeanProcessor( Date.class, new JsDateJsonBeanProcessor() );
+        jsonConfig.registerJsonValueProcessor(Date.class, new JsonHTTPDateValueProcessor());
+
+
 
 
         jsonConfig.setCycleDetectionStrategy(CycleDetectionStrategy.LENIENT);
@@ -156,20 +166,39 @@ public class Reservations extends HttpServlet {
         System.out.println("Received:");
         System.out.println(content.toString());
 
-        jsonRequest = (JSONObject) JSONSerializer.toJSON(content);
+        jsonRequest = (JSONObject) JSONSerializer.toJSON(content.toString());
+
+        System.out.println("JSON Received:");
+        System.out.println(jsonRequest.toString(3));
+
         JsonConfig jsonConfig = new JsonConfig();
-//        jsonConfig.setJsonPropertyFilter(new PropertyFilter() {
-//            public boolean apply(Object source, String name, Object value) {
-//                if ("id".equals(name) || "userid".equals(name)) {
-//                    return true;
-//                }
-//                return false;
-//            }
-//        });
-        jsonConfig.setRootClass( ReservationProposal.class );
+        jsonConfig.setCycleDetectionStrategy(CycleDetectionStrategy.LENIENT);
+        jsonConfig.setIgnoreJPATransient(true);
+
+        jsonConfig.setJavaPropertyFilter(new PropertyFilter() {
+
+            public boolean apply(Object source, String name, Object value) {
+                if ("id".equals(name) || "userid".equals(name)) {
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        //Map classMap = new HashMap();
+        //classMap.put("startTime", Calendar.class);
+
+        jsonConfig.setRootClass(ReservationProposal.class);
+        jsonConfig.registerJsonValueProcessor(ReservationProposal.class, "startTime", new JsonHTTPDateValueProcessor());
+
+
+        //proposal = (ReservationProposal) JSONObject.toBean(jsonRequest, ReservationProposal.class, classMap);
 
         proposal = (ReservationProposal) JSONSerializer.toJava(jsonRequest, jsonConfig);
         proposal.setUserid(vmuser.getUserid());
+
+        System.out.println("duration " + proposal.getDuration());
+        System.out.println("startTime " + proposal.getStartTime().toString());
 
 
 

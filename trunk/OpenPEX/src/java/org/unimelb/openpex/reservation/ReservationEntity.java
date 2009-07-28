@@ -235,7 +235,7 @@ public class ReservationEntity implements Serializable {
         proposal.setId(requestId);
         Calendar start = Calendar.getInstance();
         start.setTime(startTime);
-        proposal.setStartTime(start);
+        proposal.setStartTime(start.getTime());
         proposal.setDuration(endTime.getTime() - startTime.getTime());
         proposal.setType(type);
         proposal.setNumInstancesFixed(numInstancesFixed);

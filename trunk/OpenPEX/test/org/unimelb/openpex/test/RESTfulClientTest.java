@@ -19,14 +19,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
 import net.sf.json.JsonConfig;
 import net.sf.json.util.PropertyFilter;
 import org.unimelb.openpex.reservation.InstanceType;
-import org.unimelb.openpex.reservation.ReservationEntity;
 import org.unimelb.openpex.reservation.ReservationProposal;
+import org.unimelb.openpex.rest.JsonHTTPDateValueProcessor;
 
 /**
  *
@@ -75,7 +74,7 @@ public class RESTfulClientTest {
         startTime_.setTimeInMillis(System.currentTimeMillis());
         re.setTemplate("PEX Windows XP SP2 Template");
         re.setType(InstanceType.SMALL);
-        re.setStartTime(startTime_);
+        re.setStartTime(startTime_.getTime());
         re.setDuration(3600000);
         re.setNumInstancesFixed(1);
         re.setNumInstancesOption(0);
@@ -133,6 +132,8 @@ public class RESTfulClientTest {
                 return false;
             }
         });
+        jsonConfig.registerJsonValueProcessor(Calendar.class, new JsonHTTPDateValueProcessor());
+
         JSONObject jsonResponse = (JSONObject) JSONSerializer.toJSON(re,jsonConfig);
         return jsonResponse.toString(3);
     }
