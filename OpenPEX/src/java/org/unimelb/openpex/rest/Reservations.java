@@ -19,12 +19,8 @@ package org.unimelb.openpex.rest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -35,11 +31,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
 import net.sf.json.JsonConfig;
-import net.sf.json.processors.JsDateJsonBeanProcessor;
-import net.sf.json.processors.JsDateJsonValueProcessor;
-import net.sf.json.processors.JsonValueProcessor;
 import net.sf.json.util.CycleDetectionStrategy;
-import net.sf.json.util.NewBeanInstanceStrategy;
 import net.sf.json.util.PropertyFilter;
 import org.unimelb.openpex.PexException;
 import org.unimelb.openpex.ResourceManager;
@@ -146,6 +138,9 @@ public class Reservations extends HttpServlet {
 
         }
 
+        PrintWriter out = response.getWriter();
+
+
         VmUser vmuser = store.getUserByCred(user, pass);
 
         try {
@@ -205,23 +200,19 @@ public class Reservations extends HttpServlet {
         try {
             ReservationReply reply = rm.requestReservation(resID, proposal);
             if (reply.getReply() == ReservationReply.ReservationReplyType.ACCEPT) {
-                //error("Reservation Accepted");
                 rm.confirmReservation(resID, proposal);
+                jsonResponse = (JSONObject) JSONSerializer.toJSON(reply, jsonConfig);
             } else if (reply.getReply() == ReservationReply.ReservationReplyType.COUNTER) {
-                //Logger.getLogger(SessionBean1.class.getName()).log(Level.INFO, "Counter " + reply.getProposal().getStartTime().getTime().toString() + " " + reply.getProposal().getDuration());
-                //sessBean.setReply(reply);
-                //return;
+                jsonResponse = (JSONObject) JSONSerializer.toJSON(reply, jsonConfig);
             } else {
-                //error("Reservation Not Accepted");
+                response.sendError(response.SC_BAD_REQUEST);
             }
         } catch (PexException e) {
             e.printStackTrace();
         }
 
-
-
-
-        PrintWriter out = response.getWriter();
+        out.print(jsonResponse.toString(3));
+        out.close();
 
 
     }

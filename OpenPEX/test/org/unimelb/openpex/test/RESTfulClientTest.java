@@ -35,8 +35,8 @@ public class RESTfulClientTest {
 
     static final String resEndpoint = "http://tyrellcorp.csse.unimelb.edu.au:8080/OpenPEX/reservations/";
     static final String instancesEndpoint = "http://tyrellcorp.csse.unimelb.edu.au:8080/OpenPEX/instances/";
-    String pexUser = "";
-    String pexPass = "";
+    String pexUser = "test";
+    String pexPass = "test";
 
     public RESTfulClientTest() {
     }
@@ -73,7 +73,7 @@ public class RESTfulClientTest {
         Calendar startTime_ = Calendar.getInstance();
         startTime_.setTimeInMillis(System.currentTimeMillis());
         re.setTemplate("PEX Windows XP SP2 Template");
-        re.setType(InstanceType.SMALL);
+        re.setType(InstanceType.XLARGE);
         re.setStartTime(startTime_.getTime());
         re.setDuration(3600000);
         re.setNumInstancesFixed(1);
