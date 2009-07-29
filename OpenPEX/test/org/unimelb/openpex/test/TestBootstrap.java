@@ -32,8 +32,6 @@ public class TestBootstrap {
     public static void main(String[] args) {
         try {
             Bootstrap.bootstrap();
-
-
             ReservationManager rm = ResourceManager.getInstance();
             String resID1 = rm.initiateReservation((short) 1);
             ReservationProposal proposal1 = new ReservationProposal(resID1);
