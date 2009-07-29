@@ -90,6 +90,7 @@ public class ReservationEntity implements Serializable {
 
     public ReservationEntity(String requestId, short userid, short numInstancesFixed, short numInstancesOption, Date startTime, Date endTime, InstanceType type, String template, ReservationStatus status) {
         this(requestId);
+        this.userid = userid;
         this.numInstancesFixed = numInstancesFixed;
         this.numInstancesOption = numInstancesOption;
         this.startTime = startTime;

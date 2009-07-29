@@ -40,7 +40,7 @@ public class TestBootstrap {
             proposal1.setType(InstanceType.SMALL);
             Calendar startTime = Calendar.getInstance();
             startTime.add(Calendar.SECOND, 5 * 60);
-            proposal1.setStartTime(startTime);
+            proposal1.setStartTime(startTime.getTime());
             proposal1.setDuration(15 * 60 * 1000);
 
             ReservationReply reply = rm.requestReservation(proposal1.getId(), proposal1);

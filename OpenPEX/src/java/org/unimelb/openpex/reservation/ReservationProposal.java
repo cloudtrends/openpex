@@ -34,6 +34,7 @@ public class ReservationProposal {
     protected ReservationProposal(ReservationProposal request) {
         this.id = request.getId();
         this.numInstancesFixed = request.getNumInstancesFixed();
+        this.numInstancesOption = request.getNumInstancesOption();
         this.startTime = request.getStartTime();
         this.duration = request.getDuration();
         this.template = request.getTemplate();
