@@ -239,7 +239,7 @@ public class ReservationEntity implements Serializable {
         proposal.setDuration(endTime.getTime() - startTime.getTime());
         proposal.setType(type);
         proposal.setNumInstancesFixed(numInstancesFixed);
-        proposal.setNumInstancesFixed(numInstancesOption);
+        proposal.setNumInstancesOption(numInstancesOption);
         proposal.setTemplate(template);
         proposal.setUserid(this.getUserid());
         return proposal;
