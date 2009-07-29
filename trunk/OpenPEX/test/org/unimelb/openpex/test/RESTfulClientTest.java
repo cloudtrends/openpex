@@ -22,9 +22,11 @@ import java.util.Date;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
 import net.sf.json.JsonConfig;
+import net.sf.json.util.CycleDetectionStrategy;
 import net.sf.json.util.PropertyFilter;
 import org.unimelb.openpex.reservation.InstanceType;
 import org.unimelb.openpex.reservation.ReservationProposal;
+import org.unimelb.openpex.reservation.ReservationReply;
 import org.unimelb.openpex.rest.JsonHTTPDateValueProcessor;
 
 /**
@@ -80,7 +82,12 @@ public class RESTfulClientTest {
         re.setNumInstancesOption(0);
 
         String params = createReservation(re);
-        System.out.println(createReservationCall(params));
+        String resResponse = createReservationCall(params);
+        System.out.println(resResponse);
+
+        //String updateResResponse = updateReservationCall(resResponse);
+
+
     }
 
     public String createReservationCall(String params) throws MalformedURLException, IOException {
@@ -121,6 +128,56 @@ public class RESTfulClientTest {
         return response;
     }
 
+    public String updateReservationCall(String params) throws MalformedURLException, IOException {
+        JSONObject jsonRequest = (JSONObject) JSONSerializer.toJSON(params);
+
+        JsonConfig jsonConfig = new JsonConfig();
+        jsonConfig.setCycleDetectionStrategy(CycleDetectionStrategy.LENIENT);
+        jsonConfig.setIgnoreJPATransient(true);
+
+        jsonConfig.setRootClass(ReservationReply.class);
+        jsonConfig.registerJsonValueProcessor(ReservationProposal.class, "startTime", new JsonHTTPDateValueProcessor());
+
+        ReservationReply reply = (ReservationReply) JSONSerializer.toJava(jsonRequest, jsonConfig);
+
+        URL url = new URL(resEndpoint + "/" + reply.getProposal().getId());
+        DataOutputStream out;
+        String response;
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("PUT");
+
+        conn.addRequestProperty("OpenPEX-User", pexUser);
+        conn.addRequestProperty("OpenPEX-Pass", pexPass);
+
+        conn.setDoInput(true);
+        conn.setDoOutput(true);
+        conn.setUseCaches(false);
+
+        conn.setRequestProperty("Content-Type", "application/json");
+        // Send POST output.
+        out = new DataOutputStream(conn.getOutputStream());
+
+        out.writeBytes(params);
+        out.flush();
+        out.close();
+
+        BufferedReader reader = new BufferedReader(
+                new InputStreamReader(conn.getInputStream()));
+        String line = reader.readLine();
+        StringBuffer content = new StringBuffer();
+        while (line != null) {
+            content.append(line + "\n");
+            line = reader.readLine();
+        }
+        response = content.toString();
+        reader.close();
+        conn.disconnect();
+
+        return response;
+
+    }
+
     public String createReservation(ReservationProposal re) {
         JsonConfig jsonConfig = new JsonConfig();
         jsonConfig.setJsonPropertyFilter(new PropertyFilter() {
@@ -134,7 +191,7 @@ public class RESTfulClientTest {
         });
         jsonConfig.registerJsonValueProcessor(Calendar.class, new JsonHTTPDateValueProcessor());
 
-        JSONObject jsonResponse = (JSONObject) JSONSerializer.toJSON(re,jsonConfig);
+        JSONObject jsonResponse = (JSONObject) JSONSerializer.toJSON(re, jsonConfig);
         return jsonResponse.toString(3);
     }
 

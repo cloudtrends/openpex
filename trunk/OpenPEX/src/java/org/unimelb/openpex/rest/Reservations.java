@@ -217,6 +217,82 @@ public class Reservations extends HttpServlet {
 
     }
 
+    /**
+     * Processes requests for HTTP <code>PUT</code> method.
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    protected void processPut(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        JSONObject jsonResponse = new JSONObject();
+        JSONObject jsonRequest;
+        ReservationProposal proposal = null;
+        String resID = null;
+
+        response.setContentType("application/json");
+
+        //String auth = request.getHeader("Authorization");
+        String user = request.getHeader("OpenPEX-User");
+        String pass = request.getHeader("OpenPEX-Pass");
+
+        if (user == null || pass == null) {
+            response.sendError(response.SC_BAD_REQUEST);
+            return;
+        } else {
+            System.out.println("Creds " + user + " " + pass);
+
+        }
+
+        String path = request.getPathInfo();
+        String reqId = path.substring(1);
+
+        if (reqId.length() != 36) {
+            response.sendError(response.SC_BAD_REQUEST);
+        }
+
+
+        PrintWriter out = response.getWriter();
+
+        VmUser vmuser = store.getUserByCred(user, pass);
+
+        try {
+            rm = ResourceManager.getInstance();
+            resID = rm.initiateReservation(vmuser.getUserid());
+        } catch (PexException ex) {
+            Logger.getLogger(Reservations.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        BufferedReader reader = request.getReader();
+        String line = reader.readLine();
+        StringBuffer content = new StringBuffer();
+        while (line != null) {
+            content.append(line + "\n");
+            line = reader.readLine();
+        }
+
+        System.out.println("Received:");
+        System.out.println(content.toString());
+
+        jsonRequest = (JSONObject) JSONSerializer.toJSON(content.toString());
+
+        System.out.println("JSON Received:");
+        System.out.println(jsonRequest.toString(3));
+
+        String replyType = jsonRequest.getString("reply_type");
+
+        if (replyType.equals("ACCEPT")) {
+
+        } else if (replyType.equals("ACCEPT")) {
+
+        } else {
+            response.sendError(response.SC_BAD_REQUEST);
+        }
+
+
+    }
+
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /** 
@@ -243,6 +319,19 @@ public class Reservations extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         processPost(request, response);
+    }
+
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     * @param request servlet request
+     * @param response servlet response
+     * @throws ServletException if a servlet-specific error occurs
+     * @throws IOException if an I/O error occurs
+     */
+    @Override
+    protected void doPut(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processPut(request, response);
     }
 
     /** 
