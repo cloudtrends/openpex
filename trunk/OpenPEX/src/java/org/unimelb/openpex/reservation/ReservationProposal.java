@@ -119,6 +119,7 @@ public class ReservationProposal {
         Date endTime = new Date();
         endTime.setTime(this.getStartTime().getTime() + (long) this.getDuration());
         re.setEndTime(endTime);
+        re.setUserid((short)this.userid);
         return re;
 
     }
