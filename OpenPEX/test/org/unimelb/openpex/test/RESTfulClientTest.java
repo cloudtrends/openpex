@@ -27,6 +27,7 @@ import net.sf.json.util.PropertyFilter;
 import org.unimelb.openpex.reservation.InstanceType;
 import org.unimelb.openpex.reservation.ReservationProposal;
 import org.unimelb.openpex.reservation.ReservationReply;
+import org.unimelb.openpex.reservation.ReservationReply.ReservationReplyType;
 import org.unimelb.openpex.rest.JsonHTTPDateValueProcessor;
 
 /**
@@ -37,8 +38,8 @@ public class RESTfulClientTest {
 
     static final String resEndpoint = "http://tyrellcorp.csse.unimelb.edu.au:8080/OpenPEX/reservations/";
     static final String instancesEndpoint = "http://tyrellcorp.csse.unimelb.edu.au:8080/OpenPEX/instances/";
-    String pexUser = "test";
-    String pexPass = "test";
+    String pexUser = "";
+    String pexPass = "";
 
     public RESTfulClientTest() {
     }
@@ -74,7 +75,7 @@ public class RESTfulClientTest {
         ReservationProposal re = new ReservationProposal();
         Calendar startTime_ = Calendar.getInstance();
         startTime_.setTimeInMillis(System.currentTimeMillis());
-        re.setTemplate("PEX Windows XP SP2 Template");
+        re.setTemplate("PEX Debian Etch 4.0");
         re.setType(InstanceType.XLARGE);
         re.setStartTime(startTime_.getTime());
         re.setDuration(3600000);
@@ -85,7 +86,7 @@ public class RESTfulClientTest {
         String resResponse = createReservationCall(params);
         System.out.println(resResponse);
 
-        //String updateResResponse = updateReservationCall(resResponse);
+        String updateResResponse = updateReservationCall(resResponse);
 
 
     }
@@ -140,6 +141,16 @@ public class RESTfulClientTest {
 
         ReservationReply reply = (ReservationReply) JSONSerializer.toJava(jsonRequest, jsonConfig);
 
+        if (reply.getReply() == ReservationReplyType.COUNTER) {
+            System.out.println("Let's accept counter offer");
+            reply.setReply(ReservationReplyType.ACCEPT);
+        } else if (reply.getReply() == ReservationReplyType.ACCEPT) {
+            System.out.println("Let's confirm accept offer");
+            reply.setReply(ReservationReplyType.CONFIRM_ACCEPT);
+        }
+
+
+
         URL url = new URL(resEndpoint + "/" + reply.getProposal().getId());
         DataOutputStream out;
         String response;
@@ -158,7 +169,7 @@ public class RESTfulClientTest {
         // Send POST output.
         out = new DataOutputStream(conn.getOutputStream());
 
-        out.writeBytes(params);
+        out.writeBytes(createReservationReply(reply));
         out.flush();
         out.close();
 
@@ -189,9 +200,16 @@ public class RESTfulClientTest {
                 return false;
             }
         });
-        jsonConfig.registerJsonValueProcessor(Calendar.class, new JsonHTTPDateValueProcessor());
+        jsonConfig.registerJsonValueProcessor(ReservationProposal.class, "startTime", new JsonHTTPDateValueProcessor());
 
         JSONObject jsonResponse = (JSONObject) JSONSerializer.toJSON(re, jsonConfig);
+        return jsonResponse.toString(3);
+    }
+
+    public String createReservationReply(ReservationReply reply) {
+        JsonConfig jsonConfig = new JsonConfig();
+        jsonConfig.registerJsonValueProcessor(ReservationProposal.class, "startTime", new JsonHTTPDateValueProcessor());
+        JSONObject jsonResponse = (JSONObject) JSONSerializer.toJSON(reply, jsonConfig);
         return jsonResponse.toString(3);
     }
 
