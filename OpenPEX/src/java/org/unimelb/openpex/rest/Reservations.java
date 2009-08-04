@@ -34,12 +34,15 @@ import net.sf.json.JsonConfig;
 import net.sf.json.util.CycleDetectionStrategy;
 import net.sf.json.util.PropertyFilter;
 import org.unimelb.openpex.PexException;
+import org.unimelb.openpex.PexOperationFailedException;
 import org.unimelb.openpex.ResourceManager;
 import org.unimelb.openpex.VmUser;
+import org.unimelb.openpex.reservation.PexReservationFailedException;
 import org.unimelb.openpex.reservation.ReservationEntity;
 import org.unimelb.openpex.reservation.ReservationManager;
 import org.unimelb.openpex.reservation.ReservationProposal;
 import org.unimelb.openpex.reservation.ReservationReply;
+import org.unimelb.openpex.reservation.ReservationReply.ReservationReplyType;
 import org.unimelb.openpex.storage.PexStorage;
 
 /**
@@ -200,7 +203,7 @@ public class Reservations extends HttpServlet {
         try {
             ReservationReply reply = rm.requestReservation(resID, proposal);
             if (reply.getReply() == ReservationReply.ReservationReplyType.ACCEPT) {
-                rm.confirmReservation(resID, proposal);
+                //rm.confirmReservation(resID, proposal);
                 jsonResponse = (JSONObject) JSONSerializer.toJSON(reply, jsonConfig);
             } else if (reply.getReply() == ReservationReply.ReservationReplyType.COUNTER) {
                 jsonResponse = (JSONObject) JSONSerializer.toJSON(reply, jsonConfig);
@@ -228,8 +231,6 @@ public class Reservations extends HttpServlet {
             throws ServletException, IOException {
         JSONObject jsonResponse = new JSONObject();
         JSONObject jsonRequest;
-        ReservationProposal proposal = null;
-        String resID = null;
 
         response.setContentType("application/json");
 
@@ -246,9 +247,10 @@ public class Reservations extends HttpServlet {
         }
 
         String path = request.getPathInfo();
-        String reqId = path.substring(1);
+        String resId = path.substring(1);
 
-        if (reqId.length() != 36) {
+        if (resId.length() != 36) {
+            System.out.println("Badly formatted URI / resId:");
             response.sendError(response.SC_BAD_REQUEST);
         }
 
@@ -259,7 +261,6 @@ public class Reservations extends HttpServlet {
 
         try {
             rm = ResourceManager.getInstance();
-            resID = rm.initiateReservation(vmuser.getUserid());
         } catch (PexException ex) {
             Logger.getLogger(Reservations.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -280,14 +281,35 @@ public class Reservations extends HttpServlet {
         System.out.println("JSON Received:");
         System.out.println(jsonRequest.toString(3));
 
-        String replyType = jsonRequest.getString("reply_type");
+        JsonConfig jsonConfig = new JsonConfig();
+        jsonConfig.setCycleDetectionStrategy(CycleDetectionStrategy.LENIENT);
+        jsonConfig.setIgnoreJPATransient(true);
 
-        if (replyType.equals("ACCEPT")) {
+        jsonConfig.setRootClass(ReservationReply.class);
+        jsonConfig.registerJsonValueProcessor(ReservationProposal.class, "startTime", new JsonHTTPDateValueProcessor());
 
-        } else if (replyType.equals("ACCEPT")) {
+        ReservationReply reply = (ReservationReply) JSONSerializer.toJava(jsonRequest, jsonConfig);
 
-        } else {
-            response.sendError(response.SC_BAD_REQUEST);
+        try {
+            if (reply.getReply() == ReservationReplyType.CONFIRM_ACCEPT) {
+                System.out.println("Confirmed acceptance of offered proposal:");
+                rm.confirmReservation(reply.getProposal().getId(), reply.getProposal());
+                // Need to return ACCEPTED ReservationEntity
+                response.sendError(response.SC_OK);
+            } else if (reply.getReply() == ReservationReplyType.ACCEPT) {
+                System.out.println("Tentative acceptance of offered counter-proposal:");
+                ReservationReply counterReply = rm.replyToCounter(reply.getProposal().getId(), reply);
+                // Need to return ACCEPT ReservationReply
+            } else if (reply.getReply() == ReservationReplyType.REJECT) {
+                rm.deleteReservation(reply.getProposal().getId());
+                // Need to return REJECTED ReservationEntity
+            } else {
+                response.sendError(response.SC_BAD_REQUEST);
+            }
+        } catch (PexReservationFailedException ex) {
+            Logger.getLogger(Reservations.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (PexOperationFailedException ex) {
+            Logger.getLogger(Reservations.class.getName()).log(Level.SEVERE, null, ex);
         }
 
 
