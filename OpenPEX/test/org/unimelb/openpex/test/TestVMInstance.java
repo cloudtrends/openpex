@@ -20,6 +20,7 @@ public class TestVMInstance extends VMInstance {
 
     static Logger logger = Logger.getLogger(TestVMInstance.class.getName());
     public static final long OPERATION_TIME = 10000;
+    
     @Override
     public String create(String template, String name, String mac) throws PexOperationFailedException {
         logger.info("Creating new VM with template "+template+" name "+name);
