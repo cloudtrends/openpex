@@ -20,9 +20,6 @@ import org.unimelb.openpex.storage.PexStorageFailedException;
 public class LateBindingReservationManager extends SimpleReservationManager {
 
     public static final int TOTAL_CPUS = 20;
-    public static final int SEGMENT_CPU = 1;
-    public static final int SEGMENT_MEMORY = 256;
-    public static final int SEGMENT_DISK = 5;
     public static final float CLAIM_RISK = (float) 0.80;
     static Logger logger = Logger.getLogger(LateBindingReservationManager.class.getName());
     
