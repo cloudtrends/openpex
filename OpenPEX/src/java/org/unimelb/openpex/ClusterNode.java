@@ -113,7 +113,7 @@ public abstract class ClusterNode implements Serializable {
         for (Calendar slot : slots.keySet()) {
             res.or(timeSlotMap.get(slot));
             logger.info(this.name + " No of vms upto slot " + slot.getTime() + " is " + res.cardinality());
-            if ((res.cardinality() + record.getNumInstancesFixed()) > allowed_vms) {
+            if ((res.cardinality() + record.getNumInstancesFixed()*record.getType().getNumCPU()) > allowed_vms) {
                 logger.info(this.name + " Found a block at interval " + slot.getTime().toString());
                 result = false;
                 logger.info(this.name + " Reservation " + record.getRequestId() + " is infeasible ");
@@ -154,7 +154,7 @@ public abstract class ClusterNode implements Serializable {
                 slot = it.next();
                 BitSet r = timeSlotMap.get(slot);
                 res.or(r);
-                if (res.cardinality() + record.getNumInstancesFixed() > allowed_vms) {
+                if (res.cardinality() + record.getNumInstancesFixed()*record.getType().getNumCPU() > allowed_vms) {
                     logger.info(this.name + " Found a block at interval " + slot.getTime().toString());
                     blocked = true;
                 }
