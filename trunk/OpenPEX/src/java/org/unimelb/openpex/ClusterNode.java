@@ -211,7 +211,7 @@ public abstract class ClusterNode implements Serializable {
         for (Calendar slot : slots.keySet()) {
             BitSet res = timeSlotMap.get(slot);
             logger.info(this.name + " Found slot at " + slot.getTime().toString());
-            if (res.cardinality() + record.getNumInstancesFixed() > allowed_vms) {
+            if (res.cardinality() + record.getNumInstancesFixed()*record.getType().getNumCPU() > allowed_vms) {
                 logger.severe(this.name + " Oh noes! Commit failed as the slot is already blocked");
                 throw new PexReservationFailedException("Failed commit");
             }
@@ -220,7 +220,7 @@ public abstract class ClusterNode implements Serializable {
              * 22/9 Currently, we consider that each reservation has atleast one CPU.
              * Set a bit for each CPU (core) that is requested by the reservation.  
              */
-            res.set(index, index + record.getNumInstancesFixed());
+            res.set(index, index + record.getNumInstancesFixed()*record.getType().getNumCPU());
             logger.info(this.name + " Number of cores set at " + slot.getTime().toString() + " is " + res.cardinality());
         }
 
