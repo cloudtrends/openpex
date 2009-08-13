@@ -76,7 +76,7 @@ public class JsonHTTPDateValueProcessor implements JsonValueProcessor {
             return str;
         }
         // If it's a RFC_1123_DATE_FORMAT String convert to Date
-        if (key.contains("Time")) {
+        if (value instanceof String) {
             System.err.println("Converting string date to cal");
             Date date = null;
            

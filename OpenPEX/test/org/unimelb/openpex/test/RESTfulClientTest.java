@@ -38,8 +38,9 @@ public class RESTfulClientTest {
 
     static final String resEndpoint = "http://tyrellcorp.csse.unimelb.edu.au:8080/OpenPEX/reservations/";
     static final String instancesEndpoint = "http://tyrellcorp.csse.unimelb.edu.au:8080/OpenPEX/instances/";
-    String pexUser = "";
-    String pexPass = "";
+    String pexUser = "test";
+    String pexPass = "test";
+    ReservationReplyType reply_type = null;
 
     public RESTfulClientTest() {
     }
@@ -60,12 +61,12 @@ public class RESTfulClientTest {
     public void tearDown() {
     }
 
-    @Test
+//    @Test
     public void testListReservationsCall() throws MalformedURLException, IOException {
         System.out.print(listReservationsCall());
     }
 
-    @Test
+//    @Test
     public void testListInstancesCall() throws MalformedURLException, IOException {
         System.out.print(listInstancesCall());
     }
@@ -73,6 +74,8 @@ public class RESTfulClientTest {
     @Test
     public void testCreateReservationsCall() throws MalformedURLException, IOException {
         ReservationProposal re = new ReservationProposal();
+        ReservationReply reply = new ReservationReply();
+
         Calendar startTime_ = Calendar.getInstance();
         startTime_.setTimeInMillis(System.currentTimeMillis());
         re.setTemplate("PEX Debian Etch 4.0");
@@ -82,12 +85,50 @@ public class RESTfulClientTest {
         re.setNumInstancesFixed(1);
         re.setNumInstancesOption(0);
 
-        String params = createReservation(re);
+        String params = createReservationJSON(re);
+        System.out.println("Sending POST to /reservations with following body:");
+        System.out.println(params);
+
         String resResponse = createReservationCall(params);
+
+        System.out.println("Response to POST to /reservations was:");
         System.out.println(resResponse);
 
-        String updateResResponse = updateReservationCall(resResponse);
+        // Check reply was ACCEPT
+        reply = createReservationReply(resResponse);
 
+        if (reply.getReply() == ReservationReplyType.ACCEPT) {
+            System.out.println("Sending PUT to /reservations/resid:");
+            reply.setReply(ReservationReplyType.CONFIRM_ACCEPT);
+            String updateResResponse = updateReservationCall(reply);
+
+            System.out.println("Response to PUT to /reservations/resid was:");
+            System.out.println(updateResResponse);
+
+
+        } else if (reply.getReply() == ReservationReplyType.COUNTER) {
+            System.out.println("Sending PUT to /reservations/resid:");
+            reply.setReply(ReservationReplyType.ACCEPT);
+            String updateResResponse = updateReservationCall(reply);
+
+            System.out.println("Response to first PUT to /reservations/resid was:");
+            System.out.println(updateResResponse);
+
+            reply = createReservationReply(updateResResponse);
+            reply.setReply(ReservationReplyType.CONFIRM_ACCEPT);
+            updateResResponse = updateReservationCall(reply);
+            System.out.println("Response to second PUT to /reservations/resid was:");
+            System.out.println(updateResResponse);
+
+
+        } else {
+            System.out.println("Reservation not accepted");
+        }
+
+//        System.out.println("Sending another PUT to /reservations/resid:");
+//        String updateResResponse2 = updateReservationCall(updateResResponse);
+//        System.out.println("Response to another PUT to /reservations/resid was:");
+//        System.out.println(updateResResponse2);
 
     }
 
@@ -129,24 +170,17 @@ public class RESTfulClientTest {
         return response;
     }
 
-    public String updateReservationCall(String params) throws MalformedURLException, IOException {
-        JSONObject jsonRequest = (JSONObject) JSONSerializer.toJSON(params);
+    public String updateReservationCall(ReservationReply reply) throws MalformedURLException, IOException {
 
-        JsonConfig jsonConfig = new JsonConfig();
-        jsonConfig.setCycleDetectionStrategy(CycleDetectionStrategy.LENIENT);
-        jsonConfig.setIgnoreJPATransient(true);
+       
+        this.reply_type = reply.getReply();
 
-        jsonConfig.setRootClass(ReservationReply.class);
-        jsonConfig.registerJsonValueProcessor(ReservationProposal.class, "startTime", new JsonHTTPDateValueProcessor());
-
-        ReservationReply reply = (ReservationReply) JSONSerializer.toJava(jsonRequest, jsonConfig);
-
-        if (reply.getReply() == ReservationReplyType.COUNTER) {
-            System.out.println("Let's accept counter offer");
-            reply.setReply(ReservationReplyType.ACCEPT);
-        } else if (reply.getReply() == ReservationReplyType.ACCEPT) {
-            System.out.println("Let's confirm accept offer");
-            reply.setReply(ReservationReplyType.CONFIRM_ACCEPT);
+        if (reply.getReply() == ReservationReplyType.ACCEPT) {
+            System.out.println("Confirm accept offer");
+            //reply.setReply(ReservationReplyType.CONFIRM_ACCEPT);
+        } else if (reply.getReply() == ReservationReplyType.COUNTER) {
+            System.out.println("Accepting counter offer");
+            //reply.setReply(ReservationReplyType.ACCEPT);
         }
 
 
@@ -169,7 +203,7 @@ public class RESTfulClientTest {
         // Send POST output.
         out = new DataOutputStream(conn.getOutputStream());
 
-        out.writeBytes(createReservationReply(reply));
+        out.writeBytes(createReservationReplyJSON(reply));
         out.flush();
         out.close();
 
@@ -189,7 +223,7 @@ public class RESTfulClientTest {
 
     }
 
-    public String createReservation(ReservationProposal re) {
+    public String createReservationJSON(ReservationProposal re) {
         JsonConfig jsonConfig = new JsonConfig();
         jsonConfig.setJsonPropertyFilter(new PropertyFilter() {
 
@@ -206,11 +240,23 @@ public class RESTfulClientTest {
         return jsonResponse.toString(3);
     }
 
-    public String createReservationReply(ReservationReply reply) {
+    public String createReservationReplyJSON(ReservationReply reply) {
         JsonConfig jsonConfig = new JsonConfig();
         jsonConfig.registerJsonValueProcessor(ReservationProposal.class, "startTime", new JsonHTTPDateValueProcessor());
         JSONObject jsonResponse = (JSONObject) JSONSerializer.toJSON(reply, jsonConfig);
         return jsonResponse.toString(3);
+    }
+
+    public ReservationReply createReservationReply(String params) {
+        JSONObject jsonRequest = (JSONObject) JSONSerializer.toJSON(params);
+        JsonConfig jsonConfig = new JsonConfig();
+        jsonConfig.setCycleDetectionStrategy(CycleDetectionStrategy.LENIENT);
+        jsonConfig.setIgnoreJPATransient(true);
+        jsonConfig.setRootClass(ReservationReply.class);
+        jsonConfig.registerJsonValueProcessor(ReservationProposal.class, "startTime", new JsonHTTPDateValueProcessor());
+
+        ReservationReply reply = (ReservationReply) JSONSerializer.toJava(jsonRequest, jsonConfig);
+        return reply;
     }
 
     public String listReservationsCall() throws MalformedURLException, IOException {
