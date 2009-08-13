@@ -13,6 +13,7 @@ import org.junit.Test;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -78,7 +79,7 @@ public class RESTfulClientTest {
 
         Calendar startTime_ = Calendar.getInstance();
         startTime_.setTimeInMillis(System.currentTimeMillis());
-        re.setTemplate("PEX Debian Etch 4.0");
+        re.setTemplate("PEX Debian Etch 4.0 Template");
         re.setType(InstanceType.XLARGE);
         re.setStartTime(startTime_.getTime());
         re.setDuration(3600000);
@@ -124,6 +125,11 @@ public class RESTfulClientTest {
         } else {
             System.out.println("Reservation not accepted");
         }
+
+        String activateResResponse = activateReservationCall(reply.getProposal().getId());
+        System.out.println("Response to PUT to /reservations/resid/activate was:");
+        System.out.println(activateResResponse);
+
 
 //        System.out.println("Sending another PUT to /reservations/resid:");
 //        String updateResResponse2 = updateReservationCall(updateResResponse);
@@ -172,20 +178,20 @@ public class RESTfulClientTest {
 
     public String updateReservationCall(ReservationReply reply) throws MalformedURLException, IOException {
 
-       
+
         this.reply_type = reply.getReply();
 
         if (reply.getReply() == ReservationReplyType.ACCEPT) {
             System.out.println("Confirm accept offer");
-            //reply.setReply(ReservationReplyType.CONFIRM_ACCEPT);
+        //reply.setReply(ReservationReplyType.CONFIRM_ACCEPT);
         } else if (reply.getReply() == ReservationReplyType.COUNTER) {
             System.out.println("Accepting counter offer");
-            //reply.setReply(ReservationReplyType.ACCEPT);
+        //reply.setReply(ReservationReplyType.ACCEPT);
         }
 
 
 
-        URL url = new URL(resEndpoint + "/" + reply.getProposal().getId());
+        URL url = new URL(resEndpoint + reply.getProposal().getId());
         DataOutputStream out;
         String response;
 
@@ -220,6 +226,27 @@ public class RESTfulClientTest {
         conn.disconnect();
 
         return response;
+
+    }
+
+    public String activateReservationCall(String resId) throws MalformedURLException, IOException {
+
+        URL url = new URL(resEndpoint + resId + "/" + "activate");
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("PUT");
+        conn.addRequestProperty("OpenPEX-User", pexUser);
+        conn.addRequestProperty("OpenPEX-Pass", pexPass);
+        conn.setDoInput(true);
+        conn.setUseCaches(false);
+        InputStream is = conn.getInputStream();
+        String response = conn.getResponseMessage();
+
+        is.close();
+        conn.disconnect();
+
+        return response;
+
 
     }
 
