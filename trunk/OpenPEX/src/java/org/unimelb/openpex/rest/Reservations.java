@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -53,6 +54,7 @@ public class Reservations extends HttpServlet {
 
     PexStorage store = PexStorage.getInstance();
     ReservationManager rm;
+    ResourceManager resM;
 
     /** 
      * Processes requests for HTTP <code>GET</code> method.
@@ -169,11 +171,11 @@ public class Reservations extends HttpServlet {
         System.out.println("JSON Received:");
         System.out.println(jsonRequest.toString(3));
 
-        JsonConfig jsonConfig = new JsonConfig();
-        jsonConfig.setCycleDetectionStrategy(CycleDetectionStrategy.LENIENT);
-        jsonConfig.setIgnoreJPATransient(true);
-
-        jsonConfig.setJavaPropertyFilter(new PropertyFilter() {
+        /* jsonConfig for request */
+        JsonConfig jsonConfigReq = new JsonConfig();
+        jsonConfigReq.setCycleDetectionStrategy(CycleDetectionStrategy.LENIENT);
+        jsonConfigReq.setIgnoreJPATransient(true);
+        jsonConfigReq.setJavaPropertyFilter(new PropertyFilter() {
 
             public boolean apply(Object source, String name, Object value) {
                 if ("id".equals(name) || "userid".equals(name)) {
@@ -182,17 +184,22 @@ public class Reservations extends HttpServlet {
                 return false;
             }
         });
+        jsonConfigReq.setRootClass(ReservationProposal.class);
+        jsonConfigReq.registerJsonValueProcessor("startTime", new JsonHTTPDateValueProcessor());
+        //jsonConfigReq.registerJsonValueProcessor(ReservationProposal.class, "startTime", new JsonHTTPDateValueProcessor());
+        /* end jsonConfig for request */
 
-        //Map classMap = new HashMap();
-        //classMap.put("startTime", Calendar.class);
+        /* jsonConfig for response */
+        JsonConfig jsonConfigRes = new JsonConfig();
+        jsonConfigRes.setCycleDetectionStrategy(CycleDetectionStrategy.LENIENT);
+        jsonConfigRes.setIgnoreJPATransient(true);
+        jsonConfigRes.setRootClass(ReservationReply.class);
+        jsonConfigRes.registerJsonValueProcessor(ReservationProposal.class, "startTime", new JsonHTTPDateValueProcessor());
+        /* end jsonConfig for response */
 
-        jsonConfig.setRootClass(ReservationProposal.class);
-        jsonConfig.registerJsonValueProcessor(ReservationProposal.class, "startTime", new JsonHTTPDateValueProcessor());
 
-
-        //proposal = (ReservationProposal) JSONObject.toBean(jsonRequest, ReservationProposal.class, classMap);
-
-        proposal = (ReservationProposal) JSONSerializer.toJava(jsonRequest, jsonConfig);
+        System.out.println("Parsing ReservationProposal from JSON:");
+        proposal = (ReservationProposal) JSONSerializer.toJava(jsonRequest, jsonConfigReq);
         proposal.setUserid(vmuser.getUserid());
 
         System.out.println("duration " + proposal.getDuration());
@@ -203,10 +210,9 @@ public class Reservations extends HttpServlet {
         try {
             ReservationReply reply = rm.requestReservation(resID, proposal);
             if (reply.getReply() == ReservationReply.ReservationReplyType.ACCEPT) {
-                //rm.confirmReservation(resID, proposal);
-                jsonResponse = (JSONObject) JSONSerializer.toJSON(reply, jsonConfig);
+                jsonResponse = (JSONObject) JSONSerializer.toJSON(reply, jsonConfigRes);
             } else if (reply.getReply() == ReservationReply.ReservationReplyType.COUNTER) {
-                jsonResponse = (JSONObject) JSONSerializer.toJSON(reply, jsonConfig);
+                jsonResponse = (JSONObject) JSONSerializer.toJSON(reply, jsonConfigRes);
             } else {
                 response.sendError(response.SC_BAD_REQUEST);
             }
@@ -231,6 +237,10 @@ public class Reservations extends HttpServlet {
             throws ServletException, IOException {
         JSONObject jsonResponse = new JSONObject();
         JSONObject jsonRequest;
+        String resId = null;
+        String activateRes;
+        Random r = new Random();
+
 
         response.setContentType("application/json");
 
@@ -247,17 +257,37 @@ public class Reservations extends HttpServlet {
         }
 
         String path = request.getPathInfo();
-        String resId = path.substring(1);
 
-        if (resId.length() != 36) {
+        if (path.length() != 37 || path.length() != 46) {
             System.out.println("Badly formatted URI / resId:");
             response.sendError(response.SC_BAD_REQUEST);
         }
 
+        if (path.length() == 37) {
+            resId = path.substring(1);
+        } else if (path.length() == 46) {
+            resId = path.substring(1, 37);
+            activateRes = path.substring(39, 46);
+
+            if (activateRes.compareTo("activate") != 0) {
+                System.out.println("Badly formatted URI / resId: " + activateRes);
+                response.sendError(response.SC_BAD_REQUEST);
+            }
+
+
+        }
 
         PrintWriter out = response.getWriter();
-
         VmUser vmuser = store.getUserByCred(user, pass);
+        try {
+            resM = ResourceManager.getInstance();
+            resM.createVMInstance(resId, vmuser.getUsername() + "-" +
+                    Math.abs(r.nextInt()), true);
+            response.sendError(response.SC_OK);
+        } catch (PexException ex) {
+            Logger.getLogger(Reservations.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
 
         try {
             rm = ResourceManager.getInstance();
@@ -296,13 +326,16 @@ public class Reservations extends HttpServlet {
                 rm.confirmReservation(reply.getProposal().getId(), reply.getProposal());
                 // Need to return ACCEPTED ReservationEntity
                 response.sendError(response.SC_OK);
+                return;
             } else if (reply.getReply() == ReservationReplyType.ACCEPT) {
                 System.out.println("Tentative acceptance of offered counter-proposal:");
                 ReservationReply counterReply = rm.replyToCounter(reply.getProposal().getId(), reply);
-                // Need to return ACCEPT ReservationReply
+                jsonResponse = (JSONObject) JSONSerializer.toJSON(counterReply, jsonConfig);
+                out.print(jsonResponse.toString(3));
+            // Need to return ACCEPT ReservationReply
             } else if (reply.getReply() == ReservationReplyType.REJECT) {
                 rm.deleteReservation(reply.getProposal().getId());
-                // Need to return REJECTED ReservationEntity
+            // Need to return REJECTED ReservationEntity
             } else {
                 response.sendError(response.SC_BAD_REQUEST);
             }
