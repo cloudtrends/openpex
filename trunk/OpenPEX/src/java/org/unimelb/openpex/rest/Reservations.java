@@ -238,7 +238,7 @@ public class Reservations extends HttpServlet {
         JSONObject jsonResponse = new JSONObject();
         JSONObject jsonRequest;
         String resId = null;
-        String activateRes;
+        String activateRes = null;
         Random r = new Random();
 
 
@@ -252,40 +252,46 @@ public class Reservations extends HttpServlet {
             response.sendError(response.SC_BAD_REQUEST);
             return;
         } else {
-            System.out.println("Creds " + user + " " + pass);
+            System.out.println("Creds " + user + " " + pass + " path " + request.getPathInfo() + " " + request.getPathInfo().length());
 
         }
 
         String path = request.getPathInfo();
 
-        if (path.length() != 37 || path.length() != 46) {
-            System.out.println("Badly formatted URI / resId:");
-            response.sendError(response.SC_BAD_REQUEST);
-        }
-
         if (path.length() == 37) {
             resId = path.substring(1);
         } else if (path.length() == 46) {
             resId = path.substring(1, 37);
-            activateRes = path.substring(39, 46);
-
+            activateRes = path.substring(38);
             if (activateRes.compareTo("activate") != 0) {
                 System.out.println("Badly formatted URI / resId: " + activateRes);
                 response.sendError(response.SC_BAD_REQUEST);
+                return;
             }
-
-
+        } else {
+            System.out.println("Badly formatted URI / resId:");
+            response.sendError(response.SC_BAD_REQUEST);
+            return;
         }
 
         PrintWriter out = response.getWriter();
         VmUser vmuser = store.getUserByCred(user, pass);
-        try {
-            resM = ResourceManager.getInstance();
-            resM.createVMInstance(resId, vmuser.getUsername() + "-" +
-                    Math.abs(r.nextInt()), true);
-            response.sendError(response.SC_OK);
-        } catch (PexException ex) {
-            Logger.getLogger(Reservations.class.getName()).log(Level.SEVERE, null, ex);
+
+
+        if (activateRes != null) {
+            try {
+                System.out.println("Activating resId: " + resId);
+                resM = ResourceManager.getInstance();
+                String vmId = resM.createVMInstance(resId, vmuser.getUsername() + "-" +
+                        Math.abs(r.nextInt()), false);
+                resM.startVMInstance(resId, vmId);
+                response.sendError(response.SC_OK);
+                return;
+            } catch (PexException ex) {
+                Logger.getLogger(Reservations.class.getName()).log(Level.SEVERE, null, ex);
+                response.sendError(response.SC_BAD_REQUEST);
+                return;
+            }
         }
 
 
