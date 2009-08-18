@@ -183,7 +183,7 @@ public class SimpleReservationManager extends ReservationManager {
         switch (reply.getReply()) {
             case ACCEPT:
                 newReply.setProposal(reply.getProposal());
-                newReply.setReply(ReservationReply.ReservationReplyType.ACCEPT);
+                newReply.setReply(ReservationReply.ReservationReplyType.CONFIRM_REQUEST);
                 record.setStatus(ReservationStatus.ACCEPTED);
                 break;
             case REJECT:
@@ -249,7 +249,7 @@ public class SimpleReservationManager extends ReservationManager {
         ReservationReply reply=new ReservationReply();
         reply.setProposal(record.convertToProposal());
         if(result)
-            reply.setReply(ReservationReplyType.OPSUCCESS);
+            reply.setReply(ReservationReplyType.REQUEST_SUCCESS);
         
         return reply;
     }
@@ -276,9 +276,9 @@ public class SimpleReservationManager extends ReservationManager {
 
         ReservationReply reply = new ReservationReply();
         if(success)
-            reply.setReply(ReservationReplyType.OPSUCCESS);
+            reply.setReply(ReservationReplyType.REQUEST_SUCCESS);
         else
-            reply.setReply(ReservationReplyType.OPFAILED);
+            reply.setReply(ReservationReplyType.REQUEST_FAILED);
 
         return reply;
 

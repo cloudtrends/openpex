@@ -28,7 +28,7 @@ package org.unimelb.openpex.reservation;
  */
 public class ReservationReply {
     
-    public static enum ReservationReplyType{ACCEPT,REJECT,COUNTER,CONFIRM,OPSUCCESS,OPFAILED};
+    public static enum ReservationReplyType{ACCEPT,REJECT,COUNTER,CONFIRM,CONFIRM_REQUEST,REQUEST_SUCCESS,REQUEST_FAILED};
     
     private ReservationReplyType reply;
     private ReservationProposal proposal;
