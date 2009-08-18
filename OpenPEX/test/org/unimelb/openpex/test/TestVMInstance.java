@@ -7,6 +7,8 @@ package org.unimelb.openpex.test;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.persistence.Entity;
+import javax.persistence.Transient;
 import org.unimelb.openpex.ClusterNode;
 import org.unimelb.openpex.PexOperationFailedException;
 import org.unimelb.openpex.VMInstance;
@@ -16,9 +18,10 @@ import org.unimelb.openpex.VMInstance;
  *
  * @author srikumar
  */
+@Entity
 public class TestVMInstance extends VMInstance {
 
-    static Logger logger = Logger.getLogger(TestVMInstance.class.getName());
+    protected static Logger logger = Logger.getLogger(TestVMInstance.class.getName());
     public static final long OPERATION_TIME = 10000;
     
     @Override

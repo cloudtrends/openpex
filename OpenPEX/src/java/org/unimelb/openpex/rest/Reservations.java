@@ -327,7 +327,7 @@ public class Reservations extends HttpServlet {
         ReservationReply reply = (ReservationReply) JSONSerializer.toJava(jsonRequest, jsonConfig);
 
         try {
-            if (reply.getReply() == ReservationReplyType.CONFIRM_ACCEPT) {
+            if (reply.getReply() == ReservationReplyType.OPSUCCESS) {
                 System.out.println("Confirmed acceptance of offered proposal:");
                 rm.confirmReservation(reply.getProposal().getId(), reply.getProposal());
                 // Need to return ACCEPTED ReservationEntity

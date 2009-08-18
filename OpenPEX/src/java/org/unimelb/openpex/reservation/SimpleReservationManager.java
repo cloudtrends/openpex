@@ -186,6 +186,8 @@ public class SimpleReservationManager extends ReservationManager {
                 break;
         }
 
+        newReply.setProposal(record.convertToProposal());
+
         try {
             store.saveReservation(record);
         } catch (PexStorageFailedException ex) {
@@ -196,7 +198,7 @@ public class SimpleReservationManager extends ReservationManager {
         return newReply;
     }
 
-    public synchronized boolean confirmReservation(String reservationID, ReservationProposal proposal)
+    public synchronized ReservationReply confirmReservation(String reservationID, ReservationProposal proposal)
             throws PexReservationFailedException {
 
         boolean result = false;
@@ -233,11 +235,18 @@ public class SimpleReservationManager extends ReservationManager {
         } else {
             throw new PexReservationFailedException("Wrong state for reservation");
         }
-        return result;
+
+        ReservationReply reply=new ReservationReply();
+        reply.setProposal(record.convertToProposal());
+        if(result)
+            reply.setReply(ReservationReplyType.OPSUCCESS);
+        
+        return reply;
     }
 
-    public boolean deleteReservation(String reservationID) throws PexOperationFailedException {
+    public ReservationReply deleteReservation(String reservationID) throws PexOperationFailedException {
         ReservationEntity record = store.getReservation(reservationID);
+        boolean success = false;
         if (record == null) {
             logger.severe("Oh noes! Reeserwayshun duz nawt exist!");
             throw new PexOperationFailedException("Reservation not found, cannot start vm");
@@ -249,12 +258,19 @@ public class SimpleReservationManager extends ReservationManager {
 
         try {
             store.deleteReservation(reservationID);
+            success = true;
         } catch (PexStorageFailedException e) {
             logger.severe("Failed to remove reservation");
             throw new PexOperationFailedException("Delete failed", e);
         }
 
-        return true;
+        ReservationReply reply = new ReservationReply();
+        if(success)
+            reply.setReply(ReservationReplyType.OPSUCCESS);
+        else
+            reply.setReply(ReservationReplyType.OPFAILED);
+
+        return reply;
 
     }
 }

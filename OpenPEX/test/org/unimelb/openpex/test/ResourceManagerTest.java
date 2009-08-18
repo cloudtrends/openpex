@@ -70,7 +70,7 @@ public class ResourceManagerTest {
             logger.severe("Error in Pex Initialisation");
             throw new PexException("Nodes not found", e);
         } catch (Exception e) {
-            logger.severe("Unknown failure");
+            logger.severe("Unknown failure "+e.getMessage());
             throw new PexException("Unknown oh noes1111", e);
         }
         PexStorage store = PexStorage.getInstance();

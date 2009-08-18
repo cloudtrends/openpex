@@ -445,11 +445,11 @@ public class ResourceManager extends ReservationManager {
         return reservationMgr.replyToCounter(reservationID, reply);
     }
 
-    public boolean confirmReservation(String reservationID, ReservationProposal proposal) throws PexReservationFailedException {
+    public ReservationReply confirmReservation(String reservationID, ReservationProposal proposal) throws PexReservationFailedException {
         return reservationMgr.confirmReservation(reservationID, proposal);
     }
 
-    public boolean deleteReservation(String reservationID) throws PexOperationFailedException {
+    public ReservationReply deleteReservation(String reservationID) throws PexOperationFailedException {
         return reservationMgr.deleteReservation(reservationID);
     }
     
