@@ -6,6 +6,8 @@
 package org.unimelb.openpex.test;
 
 import java.util.Calendar;
+import javax.persistence.Entity;
+import javax.persistence.MappedSuperclass;
 import org.unimelb.openpex.ClusterNode;
 import org.unimelb.openpex.PexException;
 import org.unimelb.openpex.PexOperationFailedException;
@@ -15,6 +17,7 @@ import org.unimelb.openpex.PexOperationFailedException;
  *
  * @author srikumar
  */
+@MappedSuperclass
 public class TestClusterNode extends ClusterNode{
 
 

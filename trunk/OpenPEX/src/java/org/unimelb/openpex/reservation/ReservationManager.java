@@ -109,7 +109,7 @@ public abstract class ReservationManager {
      * @throws org.unimelb.pex.PexReservationFailedException - 
      * in case the proposal is in an incorrect state or cannot be found
      */
-    public abstract boolean confirmReservation(String reservationID, ReservationProposal proposal)
+    public abstract ReservationReply confirmReservation(String reservationID, ReservationProposal proposal)
             throws PexReservationFailedException;
 
     /**
@@ -120,7 +120,7 @@ public abstract class ReservationManager {
      * @throws org.unimelb.pex.PexReservationFailedException - 
      * in case the proposal is in an incorrect state or cannot be found
      */
-    public abstract boolean deleteReservation(String reservationID)
+    public abstract ReservationReply deleteReservation(String reservationID)
             throws PexOperationFailedException;
 
 }
