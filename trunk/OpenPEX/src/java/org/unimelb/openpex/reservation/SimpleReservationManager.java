@@ -55,7 +55,7 @@ public class SimpleReservationManager extends ReservationManager {
         return identifier;
     }
 
-    public synchronized ReservationReply requestReservation(String reservationID, ReservationProposal request)
+    public synchronized ReservationReply requestReservation(String reservationID, ReservationProposal proposal)
             throws PexReservationFailedException {
 
         logger.info("Reesarwayshun reeceevd with ID " + reservationID);
@@ -79,12 +79,22 @@ public class SimpleReservationManager extends ReservationManager {
             throw new PexReservationFailedException("No available nodes");
         }
 
-//        ReservationRecord newRec = new ReservationRecord(request, ReservationStatus.SUBMITTED);
+
+//        ReservationRecord newRec = new ReservationRecord(proposal, ReservationStatus.SUBMITTED);
 //        record = newRec.convertToEntity();
-        record = request.convertToEntity();
+        record = proposal.convertToEntity();
         record.setStatus(ReservationStatus.SUBMITTED);
         record.setRequestId(reservationID);
         ReservationReply reply = null;
+        reply = new ReservationReply();
+
+        if(record.getStartTime().after(record.getEndTime())||
+                record.getStartTime().before(Calendar.getInstance().getTime())||
+                (record.getNumInstancesFixed()+record.getNumInstancesOption())>nodes.size()){
+            reply.setReply(ReservationReplyType.REJECT);
+            reply.setProposal(proposal);
+            return reply;
+        }
 
         List<ClusterNode> feasibleList = new ArrayList<ClusterNode>();
         for (ClusterNode node : nodes) {
