@@ -20,15 +20,19 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
+import net.sf.ezmorph.Morpher;
+import net.sf.ezmorph.MorpherRegistry;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
 import net.sf.json.JsonConfig;
 import net.sf.json.util.CycleDetectionStrategy;
+import net.sf.json.util.JSONUtils;
 import net.sf.json.util.PropertyFilter;
 import org.unimelb.openpex.reservation.InstanceType;
 import org.unimelb.openpex.reservation.ReservationProposal;
 import org.unimelb.openpex.reservation.ReservationReply;
 import org.unimelb.openpex.reservation.ReservationReply.ReservationReplyType;
+import org.unimelb.openpex.rest.HTTPDateMorpher;
 import org.unimelb.openpex.rest.JsonHTTPDateValueProcessor;
 
 /**
@@ -80,8 +84,8 @@ public class RESTfulClientTest {
         Calendar startTime_ = Calendar.getInstance();
         startTime_.add(Calendar.MINUTE, 5);
         re.setTemplate("PEX Debian Etch 4.0 Template");
-        re.setType(InstanceType.XLARGE);
-        re.setStartTime(startTime_.getTime());
+        re.setType(InstanceType.XLARGE);       
+        re.setStartTime(new Date(startTime_.getTime().getTime()+480000));
         re.setDuration(3600000);
         re.setNumInstancesFixed(1);
         re.setNumInstancesOption(0);
@@ -100,7 +104,7 @@ public class RESTfulClientTest {
 
         if (reply.getReply() == ReservationReplyType.ACCEPT) {
             System.out.println("Sending PUT to /reservations/resid:");
-            reply.setReply(ReservationReplyType.CONFIRM_REQUEST);
+            reply.setReply(ReservationReplyType.CONFIRM);
             String updateResResponse = updateReservationCall(reply);
 
             System.out.println("Response to PUT to /reservations/resid was:");
@@ -116,7 +120,7 @@ public class RESTfulClientTest {
             System.out.println(updateResResponse);
 
             reply = createReservationReply(updateResResponse);
-            reply.setReply(ReservationReplyType.CONFIRM_REQUEST);
+            reply.setReply(ReservationReplyType.CONFIRM);
             updateResResponse = updateReservationCall(reply);
             System.out.println("Response to second PUT to /reservations/resid was:");
             System.out.println(updateResResponse);
@@ -124,6 +128,7 @@ public class RESTfulClientTest {
 
         } else {
             System.out.println("Reservation not accepted");
+            return;
         }
 
         String activateResResponse = activateReservationCall(reply.getProposal().getId());
@@ -275,12 +280,17 @@ public class RESTfulClientTest {
     }
 
     public ReservationReply createReservationReply(String params) {
+        Morpher dateMorpher = new HTTPDateMorpher(Date.class);
+        MorpherRegistry morphReg = JSONUtils.getMorpherRegistry();
+        morphReg.registerMorpher(dateMorpher);
+
         JSONObject jsonRequest = (JSONObject) JSONSerializer.toJSON(params);
         JsonConfig jsonConfig = new JsonConfig();
         jsonConfig.setCycleDetectionStrategy(CycleDetectionStrategy.LENIENT);
         jsonConfig.setIgnoreJPATransient(true);
         jsonConfig.setRootClass(ReservationReply.class);
-        jsonConfig.registerJsonValueProcessor(ReservationProposal.class, "startTime", new JsonHTTPDateValueProcessor());
+        //jsonConfig.registerJsonValueProcessor(ReservationProposal.class, "startTime", new JsonHTTPDateValueProcessor());
+
 
         ReservationReply reply = (ReservationReply) JSONSerializer.toJava(jsonRequest, jsonConfig);
         return reply;
