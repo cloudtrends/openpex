@@ -78,7 +78,7 @@ public class RESTfulClientTest {
         ReservationReply reply = new ReservationReply();
 
         Calendar startTime_ = Calendar.getInstance();
-        startTime_.setTimeInMillis(System.currentTimeMillis());
+        startTime_.add(Calendar.MINUTE, 5);
         re.setTemplate("PEX Debian Etch 4.0 Template");
         re.setType(InstanceType.XLARGE);
         re.setStartTime(startTime_.getTime());

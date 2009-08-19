@@ -85,12 +85,16 @@ public class SimpleReservationManager extends ReservationManager {
         record = proposal.convertToEntity();
         record.setStatus(ReservationStatus.SUBMITTED);
         record.setRequestId(reservationID);
+        logger.info("Received reserv. req with starting "
+                +record.getStartTime()+" ending "+record.getEndTime()
+                +" for "+record.getNumInstancesFixed()+" nodes ");
         ReservationReply reply = null;
         reply = new ReservationReply();
 
         if(record.getStartTime().after(record.getEndTime())||
                 record.getStartTime().before(Calendar.getInstance().getTime())||
                 (record.getNumInstancesFixed()+record.getNumInstancesOption())>nodes.size()){
+            logger.info("The request received was rejected as OpenPex could not fulfil it");
             reply.setReply(ReservationReplyType.REJECT);
             reply.setProposal(proposal);
             return reply;
