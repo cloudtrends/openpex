@@ -62,12 +62,12 @@ public class RESTfulClientTest {
     public void tearDown() {
     }
 
-//    @Test
+    //@Test
     public void testListReservationsCall() throws MalformedURLException, IOException {
         System.out.print(listReservationsCall());
     }
 
-//    @Test
+    //@Test
     public void testListInstancesCall() throws MalformedURLException, IOException {
         System.out.print(listInstancesCall());
     }
@@ -100,7 +100,7 @@ public class RESTfulClientTest {
 
         if (reply.getReply() == ReservationReplyType.ACCEPT) {
             System.out.println("Sending PUT to /reservations/resid:");
-            reply.setReply(ReservationReplyType.CONFIRM_ACCEPT);
+            reply.setReply(ReservationReplyType.CONFIRM_REQUEST);
             String updateResResponse = updateReservationCall(reply);
 
             System.out.println("Response to PUT to /reservations/resid was:");
@@ -116,7 +116,7 @@ public class RESTfulClientTest {
             System.out.println(updateResResponse);
 
             reply = createReservationReply(updateResResponse);
-            reply.setReply(ReservationReplyType.CONFIRM_ACCEPT);
+            reply.setReply(ReservationReplyType.CONFIRM_REQUEST);
             updateResResponse = updateReservationCall(reply);
             System.out.println("Response to second PUT to /reservations/resid was:");
             System.out.println(updateResResponse);
