@@ -28,11 +28,16 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import net.sf.ezmorph.Morpher;
+import net.sf.ezmorph.MorpherRegistry;
+import net.sf.ezmorph.bean.BeanMorpher;
+import net.sf.ezmorph.object.StringMorpher;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
 import net.sf.json.JsonConfig;
 import net.sf.json.util.CycleDetectionStrategy;
+import net.sf.json.util.JSONUtils;
 import net.sf.json.util.PropertyFilter;
 import org.unimelb.openpex.PexException;
 import org.unimelb.openpex.PexOperationFailedException;
@@ -185,9 +190,10 @@ public class Reservations extends HttpServlet {
             }
         });
         jsonConfigReq.setRootClass(ReservationProposal.class);
-        jsonConfigReq.registerJsonValueProcessor("startTime", new JsonHTTPDateValueProcessor());
+        //jsonConfigReq.registerJsonValueProcessor("startTime", new JsonHTTPDateValueProcessor());
         //jsonConfigReq.registerJsonValueProcessor(ReservationProposal.class, "startTime", new JsonHTTPDateValueProcessor());
         /* end jsonConfig for request */
+
 
         /* jsonConfig for response */
         JsonConfig jsonConfigRes = new JsonConfig();
@@ -197,6 +203,9 @@ public class Reservations extends HttpServlet {
         jsonConfigRes.registerJsonValueProcessor(ReservationProposal.class, "startTime", new JsonHTTPDateValueProcessor());
         /* end jsonConfig for response */
 
+        Morpher dateMorpher = new HTTPDateMorpher(Date.class);
+        MorpherRegistry morphReg = JSONUtils.getMorpherRegistry();
+        morphReg.registerMorpher(dateMorpher);
 
         System.out.println("Parsing ReservationProposal from JSON:");
         proposal = (ReservationProposal) JSONSerializer.toJava(jsonRequest, jsonConfigReq);
@@ -315,6 +324,10 @@ public class Reservations extends HttpServlet {
         System.out.println("Received:");
         System.out.println(content.toString());
 
+        Morpher dateMorpher = new HTTPDateMorpher(Date.class);
+        MorpherRegistry morphReg = JSONUtils.getMorpherRegistry();
+        morphReg.registerMorpher(dateMorpher);
+
         jsonRequest = (JSONObject) JSONSerializer.toJSON(content.toString());
 
         System.out.println("JSON Received:");
@@ -323,6 +336,7 @@ public class Reservations extends HttpServlet {
         JsonConfig jsonConfig = new JsonConfig();
         jsonConfig.setCycleDetectionStrategy(CycleDetectionStrategy.LENIENT);
         jsonConfig.setIgnoreJPATransient(true);
+
 
         jsonConfig.setRootClass(ReservationReply.class);
         jsonConfig.registerJsonValueProcessor(ReservationProposal.class, "startTime", new JsonHTTPDateValueProcessor());

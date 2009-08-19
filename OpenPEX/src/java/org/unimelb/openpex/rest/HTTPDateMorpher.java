@@ -14,34 +14,67 @@
 //
 //    You should have received a copy of the GNU General Public License
 //    along with OpenPEX.  If not, see <http://www.gnu.org/licenses/>.
-
 package org.unimelb.openpex.rest;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.sf.json.JsonConfig;
-import net.sf.json.processors.JsonValueProcessor;
+import net.sf.ezmorph.ObjectMorpher;
 
 /**
  *
  * @author brobergj
  */
-public class JsonHTTPDateValueProcessor implements JsonValueProcessor {
+public class HTTPDateMorpher implements ObjectMorpher {
 
+    private Class dateClass;
     private static final String RFC_1123_DATE_FORMAT =
             "E, dd MMM yyyy HH:mm:ss z";
     private static final String RFC_1123_TIMEZONE = "GMT";
     private DateFormat dateFormat;
 
-    public JsonHTTPDateValueProcessor() {
+    public HTTPDateMorpher(Class dateClass) {
+        if (dateClass == null) {
+            throw new IllegalArgumentException("dateClass is null");
+        }
+        if (!Date.class.isAssignableFrom(dateClass)) {
+            throw new IllegalArgumentException("dateClass is not an Date class");
+        }
+        this.dateClass = dateClass;
+
         this.setDateFormat(new SimpleDateFormat(RFC_1123_DATE_FORMAT));
         this.getDateFormat().setTimeZone(TimeZone.getTimeZone(RFC_1123_TIMEZONE));
+    }
+
+    public Object morph(Object value) {
+        if (value == null) {
+            return dateClass.cast(null);
+        }
+
+        System.err.println("Converting String date to Java Date");
+        Date date = null;
+
+        try {
+            date = getDateFormat().parse((String) value);
+        } catch (ParseException ex) {
+            Logger.getLogger(JsonHTTPDateValueProcessor.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NullPointerException ex) {
+            Logger.getLogger(JsonHTTPDateValueProcessor.class.getName()).log(Level.SEVERE, null, ex);
+            return "";
+        }
+        return date;
+    }
+
+    public Class morphsTo() {
+        return dateClass;
+    }
+
+    public boolean supports(Class clazz) {
+        return String.class.isAssignableFrom(clazz);
     }
 
     /**
@@ -56,43 +89,5 @@ public class JsonHTTPDateValueProcessor implements JsonValueProcessor {
      */
     public void setDateFormat(DateFormat dateFormat) {
         this.dateFormat = dateFormat;
-    }
-
-    public Object processArrayValue(Object value, JsonConfig config) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public Object processObjectValue(String key, Object value, JsonConfig config) {
-
-        System.err.println("Calling processObjectValue()");
-        // If it's a Date convert to RFC_1123_DATE_FORMAT
-        if (value instanceof Date) {
-            String str = getDateFormat().format((Date) value);
-            return str;
-        }
-        // If it's a Calendar convert to RFC_1123_DATE_FORMAT
-        if (value instanceof Calendar) {
-            String str = getDateFormat().format(((Calendar)value).getTime());
-            return str;
-        }
-        // If it's a RFC_1123_DATE_FORMAT String convert to Date
-//        if (value instanceof String) {
-//            System.err.println("Converting string date to cal");
-//            Date date = null;
-//
-//            try {
-//                date = getDateFormat().parse((String) value);
-//
-//            } catch (ParseException ex) {
-//                Logger.getLogger(JsonHTTPDateValueProcessor.class.getName()).log(Level.SEVERE, null, ex);
-//            } catch (NullPointerException ex) {
-//                Logger.getLogger(JsonHTTPDateValueProcessor.class.getName()).log(Level.SEVERE, null, ex);
-//                return "";
-//            }
-//            return date;
-//        }
-
-
-        return value == null ? null : value.toString();
     }
 }
