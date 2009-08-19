@@ -213,8 +213,11 @@ public class Reservations extends HttpServlet {
                 jsonResponse = (JSONObject) JSONSerializer.toJSON(reply, jsonConfigRes);
             } else if (reply.getReply() == ReservationReply.ReservationReplyType.COUNTER) {
                 jsonResponse = (JSONObject) JSONSerializer.toJSON(reply, jsonConfigRes);
+            } else if (reply.getReply() == ReservationReply.ReservationReplyType.REJECT) {
+                jsonResponse = (JSONObject) JSONSerializer.toJSON(reply, jsonConfigRes);
             } else {
                 response.sendError(response.SC_BAD_REQUEST);
+                return;
             }
         } catch (PexException e) {
             e.printStackTrace();
@@ -327,21 +330,23 @@ public class Reservations extends HttpServlet {
         ReservationReply reply = (ReservationReply) JSONSerializer.toJava(jsonRequest, jsonConfig);
 
         try {
-            if (reply.getReply() == ReservationReplyType.REQUEST_SUCCESS) {
+            if (reply.getReply() == ReservationReplyType.CONFIRM) {
                 System.out.println("Confirmed acceptance of offered proposal:");
-                rm.confirmReservation(reply.getProposal().getId(), reply.getProposal());
-                // Need to return ACCEPTED ReservationEntity
-                response.sendError(response.SC_OK);
-                return;
+                ReservationReply confirmReply = rm.confirmReservation(reply.getProposal().getId(), reply.getProposal());
+                jsonResponse = (JSONObject) JSONSerializer.toJSON(confirmReply, jsonConfig);
+                // Need to return REQUEST-SUCCESS ReservationEntity
+                out.print(jsonResponse.toString(3));
             } else if (reply.getReply() == ReservationReplyType.ACCEPT) {
                 System.out.println("Tentative acceptance of offered counter-proposal:");
                 ReservationReply counterReply = rm.replyToCounter(reply.getProposal().getId(), reply);
                 jsonResponse = (JSONObject) JSONSerializer.toJSON(counterReply, jsonConfig);
+                // Need to return CONFIRM-REQUEST ReservationReply
                 out.print(jsonResponse.toString(3));
-            // Need to return ACCEPT ReservationReply
             } else if (reply.getReply() == ReservationReplyType.REJECT) {
-                rm.deleteReservation(reply.getProposal().getId());
-            // Need to return REJECTED ReservationEntity
+                ReservationReply rejectReply = rm.deleteReservation(reply.getProposal().getId());
+                jsonResponse = (JSONObject) JSONSerializer.toJSON(rejectReply, jsonConfig);
+                // Need to return REJECTED ReservationEntity
+                out.print(jsonResponse.toString(3));
             } else {
                 response.sendError(response.SC_BAD_REQUEST);
             }
