@@ -83,10 +83,9 @@ public class ReservationManagerTest {
         reservationId = srmanager.initiateReservation(userid);
         ReservationProposal rp = getReservationProposal();
         reply =srmanager.requestReservation(reservationId, rp);
-        boolean expResult = true;
         ReservationProposal resProposal = getReservationProposal();
-        boolean result = srmanager.confirmReservation(reservationId, resProposal);
-        assertEquals(expResult,result);
+        ReservationReply result = srmanager.confirmReservation(reservationId, resProposal);
+        assertEquals(ReservationReplyType.REQUEST_SUCCESS, result.getReply());
         logger.info("End Confirm reservation......");
     }
 
@@ -94,9 +93,8 @@ public class ReservationManagerTest {
     public void testDeleteReservation() throws Exception {
 
         System.out.println("testDeleteReservation:" + reservationId);
-        boolean isdeleted = srmanager.deleteReservation(reservationId);
-        boolean expresult = true;
-        assertEquals(expresult, isdeleted);
+        ReservationReply result = srmanager.deleteReservation(reservationId);
+        assertEquals(ReservationReplyType.REQUEST_SUCCESS, result.getReply());
 
     }
     

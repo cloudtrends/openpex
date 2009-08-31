@@ -299,32 +299,32 @@ public class ResourceManagerTest {
     /**
      * Test of confirmReservation method, of class ResourceManager.
      */
-    @Test
-    public void testConfirmReservation() throws Exception {
-        System.out.println("confirmReservation");
-        String reservationID = "";
-        ReservationProposal proposal = null;
-        ResourceManager instance = null;
-        boolean expResult = false;
-        boolean result = instance.confirmReservation(reservationID, proposal);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of deleteReservation method, of class ResourceManager.
-     */
-    @Test
-    public void testDeleteReservation() throws Exception {
-        System.out.println("deleteReservation");
-        String reservationID = "";
-        ResourceManager instance = null;
-        boolean expResult = false;
-        boolean result = instance.deleteReservation(reservationID);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
+//    @Test
+//    public void testConfirmReservation() throws Exception {
+//        System.out.println("confirmReservation");
+//        String reservationID = "";
+//        ReservationProposal proposal = null;
+//        ResourceManager instance = null;
+//        boolean expResult = false;
+//        boolean result = instance.confirmReservation(reservationID, proposal);
+//        assertEquals(expResult, result);
+//        // TODO review the generated test code and remove the default call to fail.
+//        fail("The test case is a prototype.");
+//    }
+//
+//    /**
+//     * Test of deleteReservation method, of class ResourceManager.
+//     */
+//    @Test
+//    public void testDeleteReservation() throws Exception {
+//        System.out.println("deleteReservation");
+//        String reservationID = "";
+//        ResourceManager instance = null;
+//        boolean expResult = false;
+//        boolean result = instance.deleteReservation(reservationID);
+//        assertEquals(expResult, result);
+//        // TODO review the generated test code and remove the default call to fail.
+//        fail("The test case is a prototype.");
+//    }
 
 }

@@ -45,7 +45,7 @@ public class PexStorage {
     private static PexStorage storage = null;
     private EntityManagerFactory emf;
     private EntityManager em;
-    private String DEFAULT_PERSISTENCE_UNIT_NAME = "OpenPEXPU";
+    private String DEFAULT_PERSISTENCE_UNIT_NAME = "PexJava";
     static Logger logger = Logger.getLogger(PexStorage.class.getName());
 
     public static PexStorage getInstance() {
