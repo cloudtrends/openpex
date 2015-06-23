@@ -1,0 +1,2 @@
+PEX (Provisioning and EXecution Environment) is a resource provisioning system based on VMs. PEX was constructed around the notion of using advance reservations as the primary method for allocating VM instances. A user, either through a web portal or through a web service can make a reservation for any number of instances of a Virtual Machine that have to
+be started at a specific time and have to last for a specific duration. VMs are described by a template that is already registered in the system.
